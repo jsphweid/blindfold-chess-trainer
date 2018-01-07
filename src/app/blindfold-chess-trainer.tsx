@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as Chessboard from 'react-chess'
-import { NotationType, PositionType } from './common/generatedTypes'
+import { NotationType } from './common/generatedTypes'
 import ChessEngine from './chess-engine/chess-engine'
 import { getReactChessStateFromFen } from './common/helpers'
 
@@ -37,7 +37,7 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
     randomOpponentMove = (): void => {
         const moves: any[] = this.state.chessEngine.getAllPossibleMoves()
         const move = moves[Math.floor(Math.random() * moves.length)]
-        const result = this.state.chessEngine.attemptMove(move)
+        this.state.chessEngine.attemptMove(move)
         this.syncGameState()
     }
 
