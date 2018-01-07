@@ -8,3 +8,7 @@ Phase 1: text commands
 Phase 2: voice commands
 Phase 3: ai
 (Phase 4: peer to peer)
+
+
+Things that might be useful:
+ - load game state from fen?
