@@ -12,10 +12,14 @@ export interface BlindfoldChessTrainerState {
     chessEngine: ChessEngine
     newMoveInput: string
     waitingToConfirmMove: boolean
-    moveMessage: any
+    errorMessage: any
+    fenInput: string
+    computerThinkingAboutNextMove: boolean
 }
 
 export default class BlindfoldChessTrainer extends React.Component<BlindfoldChessTrainerProps, BlindfoldChessTrainerState> {
+
+    playInput: HTMLElement
 
     constructor(props: BlindfoldChessTrainerProps) {
         super(props)
@@ -25,7 +29,9 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
             chessEngine: new ChessEngine(),
             newMoveInput: '',
             waitingToConfirmMove: false,
-            moveMessage: null
+            errorMessage: null,
+            fenInput: '',
+            computerThinkingAboutNextMove: false
         }
     }
 
@@ -34,29 +40,43 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
         this.setState({ allPositionsAsNotations: getReactChessStateFromFen(currentStateAsFen) })
     }
 
-    randomOpponentMove = (): void => {
-        const moves: any[] = this.state.chessEngine.getAllPossibleMoves()
-        const move = moves[Math.floor(Math.random() * moves.length)]
-        this.state.chessEngine.attemptMove(move)
-        this.syncGameState()
+    computerMakesAMove = (): void => {
+        setTimeout(() => {
+            this.setState({ computerThinkingAboutNextMove: true })
+            setTimeout(() => {
+                const moves: any[] = this.state.chessEngine.getAllPossibleMoves()
+                const move = moves[Math.floor(Math.random() * moves.length)]
+                this.state.chessEngine.move(move)
+                this.syncGameState()
+                this.tryToRefocusInput()
+                this.setState({ computerThinkingAboutNextMove: false })
+            }, 1000)
+        }, 500)
     }
 
-    confirmMove = (): void => {
+    handleEnter = (): void => {
         if (this.state.waitingToConfirmMove) {
-            const result = this.state.chessEngine.attemptMove(this.state.newMoveInput)
-            this.setState({ waitingToConfirmMove: false, moveMessage: result, newMoveInput: '' })
+            const result = this.state.chessEngine.move(this.state.newMoveInput)
+            const errorMessage: string = result ? '' : 'Failed to move piece.'
+            this.setState({ errorMessage, waitingToConfirmMove: false, newMoveInput: '' })
             this.syncGameState()
+            if (!errorMessage) this.computerMakesAMove()
         } else {
             if (this.state.newMoveInput) {
-                this.setState({ waitingToConfirmMove: true })
-            } else {
-                this.randomOpponentMove()
+                if (this.state.chessEngine.moveIsValid(this.state.newMoveInput)) {
+                    this.setState({ waitingToConfirmMove: true })
+                } else {
+                    this.setState({ errorMessage: 'Move is invalid.' })
+                }
             }
         }
     }
 
-    handleMoveInputChange = (event: any): void => {
-        this.setState({ newMoveInput: event.currentTarget.value, waitingToConfirmMove: false })
+    tryToRefocusInput = (): void => {
+        if (this.playInput) {
+            this.playInput.blur()
+            setTimeout(() => this.playInput.focus(), 10)
+        }
     }
 
     renderInfo = (): JSX.Element => {
@@ -73,11 +93,36 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
         return (
             <div>
                 <input
+                    ref={(input) => this.playInput = input}
                     type="text"
                     value={this.state.newMoveInput}
-                    onChange={this.handleMoveInputChange}
-                    onKeyPress={(event: any) => (event.key === 'Enter') && this.confirmMove()}
+                    onChange={(e) => this.setState({ newMoveInput: e.currentTarget.value, waitingToConfirmMove: false })}
+                    onKeyPress={(e) => (e.key === 'Enter') && this.handleEnter()}
                 />
+            </div>
+        )
+    }
+
+    handleLoadGameFromFen = () => {
+        const loadWasSuccessful = this.state.chessEngine.loadGameFromFenState(this.state.fenInput)
+        const errorMessage: string = loadWasSuccessful ? '' : 'Could not load game from this FEN.'
+        this.setState({ errorMessage })
+        this.syncGameState()
+        this.tryToRefocusInput()
+    }
+
+    renderFenStateAndLoader = (): JSX.Element => {
+        return (
+            <div>
+                <div>Load game state from FEN</div>
+                <input
+                    type="text"
+                    value={this.state.fenInput}
+                    onChange={(e) => this.setState({ fenInput: e.currentTarget.value })}
+                    onKeyPress={(e) => (e.key === 'Enter') && this.handleLoadGameFromFen()}
+                />
+                <div>Current game state as FEN</div>
+                {this.state.chessEngine.getCurrentStateAsFen()}
             </div>
         )
     }
@@ -86,13 +131,15 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
 
         return (
             <div className="bct">
-                <button onClick={this.randomOpponentMove}>random move</button>
                 <div className="bct-chessboard">
                     <Chessboard allowMoves={false} pieces={this.state.allPositionsAsNotations} />
                 </div>
+                {this.state.computerThinkingAboutNextMove ? <span style={{ fontSize: '20px' }}>Computer thinking...</span> : null}
                 {this.renderInfo()}
                 {this.renderMoveInput()}
                 {this.state.waitingToConfirmMove ? <h1>please confirm</h1> : null}
+                {this.renderFenStateAndLoader()}
+                <span style={{ color: 'red', fontWeight: 'bold' }}>{this.state.errorMessage}</span>
             </div>
         )
 

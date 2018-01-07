@@ -17,7 +17,8 @@
         "object-literal-key-quotes": false,
         "no-increment-decrement": false,
         "variable-name": [true, "allow-pascal-case", ""],
-        "no-else-after-return": false
+        "no-else-after-return": false,
+        "align": false
     },
     "rulesDirectory": []
 }

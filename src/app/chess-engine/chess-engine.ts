@@ -1,5 +1,9 @@
 const ChessEngineLibrary = require('./chess-engine-library')
 
+const MOVE_OPTIONS = {
+    sloppy: true
+}
+
 export default class ChessEngine {
 
     private chessEngine: any
@@ -12,12 +16,26 @@ export default class ChessEngine {
         return this.chessEngine.moves()
     }
 
-    public attemptMove(move: any): any {
-        return this.chessEngine.move(move)
+    public move(move: any): any {
+        return this.chessEngine.move(move, MOVE_OPTIONS)
     }
 
     public getCurrentStateAsFen(): string {
         return this.chessEngine.fen()
+    }
+
+    public loadGameFromFenState(fen: string): boolean {
+        return this.chessEngine.load(fen)
+    }
+
+    public moveIsValid(move: any): boolean {
+        const success: boolean = this.chessEngine.move(move, MOVE_OPTIONS)
+        if (success) {
+            this.chessEngine.undo()
+            return true
+        } else {
+            return false
+        }
     }
 
     public gameCanContinue(): boolean {
