@@ -1,15 +1,15 @@
 import * as React from 'react'
 import * as Chessboard from 'react-chess'
-import { PieceObjType } from './common/types'
 import { NotationType, PositionType } from './common/generatedTypes'
-import ChessValidationEngine from './chess-validation-engine'
+import ChessEngine from './chess-engine/chess-engine'
+import { getReactChessStateFromFen } from './common/helpers'
 
 export interface BlindfoldChessTrainerProps {
 }
 
 export interface BlindfoldChessTrainerState {
     allPositionsAsNotations: NotationType[]
-    chessValidationEngine: ChessValidationEngine
+    chessEngine: ChessEngine
 }
 
 export default class BlindfoldChessTrainer extends React.Component<BlindfoldChessTrainerProps, BlindfoldChessTrainerState> {
@@ -20,32 +20,44 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
 
         this.state = {
             allPositionsAsNotations: Chessboard.getDefaultLineup(),
-            chessValidationEngine: new ChessValidationEngine()
+            chessEngine: new ChessEngine()
         }
+        console.log('Chessboard.getDefaultLineup()', Chessboard.getDefaultLineup())
 
     }
 
-    handleMovePiece = (piece: PieceObjType, fromSquare: PositionType, toSquare: PositionType) => {
-        const newPieces = this.state.allPositionsAsNotations
-            .map((pieceAndPositionInNotation: NotationType, index: number) => {
-                if (piece.index === index) {
-                    return `${piece.name}@${toSquare}`
-                } else if (pieceAndPositionInNotation.indexOf(toSquare) === 2) {
-                    return false
-                }
-                return pieceAndPositionInNotation
-            })
-            .filter(Boolean) as NotationType[]
+    testRandomMoves = (num: number): void => {
+        for (let i = 0; i < num; i++) {
+            if (this.state.chessEngine.gameCanContinue()) {
+                this.testRandomMove()
+            } else {
+                break
+            }
+        }
+    }
 
-        this.setState({ allPositionsAsNotations: newPieces })
+    testRandomMove = (): void => {
+        const moves: any[] = this.state.chessEngine.getAllPossibleMoves()
+        const move = moves[Math.floor(Math.random() * moves.length)]
+        const result = this.state.chessEngine.attemptMove(move)
+        const currentStateAsFen: string = this.state.chessEngine.getCurrentStateAsFen()
+        this.setState({ allPositionsAsNotations: getReactChessStateFromFen(currentStateAsFen) })
+    }
+
+    attemptToMovePiece = (): void => {
+        console.log('what')
     }
 
     render() {
+        this.state.chessEngine.getAllPossibleMoves()
 
         return (
             <div className="bct">
-                <Chessboard pieces={this.state.allPositionsAsNotations} onMovePiece={this.handleMovePiece} />
-                {this.state.chessValidationEngine.getAllPossibleMoves()}
+                <button onClick={this.attemptToMovePiece}>test move</button>
+                <button onClick={() => this.testRandomMoves(3000)}>random move</button>
+                <div className="bct-chessboard">
+                    <Chessboard pieces={this.state.allPositionsAsNotations} />
+                </div>
             </div>
         )
 
