@@ -8,8 +8,7 @@ export default class ChessEngine {
         this.chessEngine = new ChessEngineLibrary()
     }
 
-    public getAllPossibleMoves(): any {
-        console.log('possible moves', this.chessEngine.moves())
+    public getAllPossibleMoves(): string[] {
         return this.chessEngine.moves()
     }
 
@@ -41,6 +40,10 @@ export default class ChessEngine {
             default:
                 return true
         }
+    }
+
+    public isWhitesTurn(): boolean {
+        return this.chessEngine.turn() === 'w'
     }
 
 }
