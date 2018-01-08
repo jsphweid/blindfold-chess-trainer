@@ -81,11 +81,10 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
         )
     }
 
-    handleLoadGameFromFen = (fen: string): void => {
+    handleLoadGameFromFen = (fen: string): boolean => {
         const loadWasSuccessful = this.state.chessEngine.loadGameFromFenState(fen)
-        const errorMessage: string = loadWasSuccessful ? '' : 'Could not load game from this FEN.'
-        this.setState({ errorMessage })
         this.syncGameState()
+        return loadWasSuccessful
     }
 
 

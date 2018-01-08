@@ -1,12 +1,13 @@
 import * as React from 'react'
 
 export interface FenSectionProps {
-    handleLoadGameFromFen: (fen: string) => void
+    handleLoadGameFromFen: (fen: string) => boolean
     currentBoardStateAsFen: string
 }
 
 export interface FenSectionState {
     fenInput: string
+    fenError: boolean
 }
 
 export default class FenSection extends React.Component<FenSectionProps, FenSectionState> {
@@ -15,8 +16,22 @@ export default class FenSection extends React.Component<FenSectionProps, FenSect
         super(props)
 
         this.state = {
-            fenInput: ''
+            fenInput: '',
+            fenError: false
         }
+    }
+
+    handleLoadGameFromFen = (): void => {
+        const loadedSuccessfully: boolean = this.props.handleLoadGameFromFen(this.state.fenInput)
+        this.setState({ fenError: !loadedSuccessfully })
+    }
+
+    renderErrorSection = (): JSX.Element => {
+        return (
+            <div className="bct-fenSection-error">
+                Could not load game from this FEN.
+            </div>
+        )
     }
 
     render() {
@@ -32,9 +47,10 @@ export default class FenSection extends React.Component<FenSectionProps, FenSect
                         type="text"
                         value={this.state.fenInput}
                         onChange={(e) => this.setState({ fenInput: e.currentTarget.value })}
-                        onKeyPress={(e) => (e.key === 'Enter') && this.props.handleLoadGameFromFen(this.state.fenInput)}
+                        onKeyPress={(e) => (e.key === 'Enter') && this.handleLoadGameFromFen()}
                     />
                 </div>
+                {this.state.fenError ? this.renderErrorSection() : null}
             </div>
         )
     }
