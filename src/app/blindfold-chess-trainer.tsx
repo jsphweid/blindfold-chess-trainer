@@ -53,6 +53,18 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
         }, 500)
     }
 
+    playRandomGame = (): void => {
+        setTimeout(() => {
+            const moves: any[] = this.state.chessEngine.getAllPossibleMoves()
+            const move = moves[Math.floor(Math.random() * moves.length)]
+            this.state.chessEngine.move(move)
+            this.syncGameState()
+            if (this.state.chessEngine.getGameState() === GameStateType.Playable) {
+                this.playRandomGame()
+            }
+        }, 10)
+    }
+
     handleEnter = (move: string): void => {
         if (this.state.waitingToConfirmMove) {
             const result = this.state.chessEngine.move(move)
@@ -73,7 +85,7 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
         }
     }
 
-    renderInfo = (): JSX.Element => {
+    renderWhoseTurn = (): JSX.Element => {
         return (
             <div>
                 <h1>{`It's ${this.state.chessEngine.isWhitesTurn() ? 'White\'s' : 'Black\'s' } turn!`}</h1>
@@ -95,11 +107,12 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
         return (
             <div className="bct">
                 <div className="bct-chessboard">
+                    <button onClick={this.playRandomGame}>Play Random Game</button>
                     <Chessboard allowMoves={false} pieces={this.state.allPositionsAsNotations} />
                 </div>
                 <div className="bct-info">
                     {this.state.computerThinkingAboutNextMove ? <span style={{ fontSize: '20px' }}>Computer thinking...</span> : null}
-                    {this.renderInfo()}
+                    {this.renderWhoseTurn()}
                     <MoveInput
                         handleEnter={this.handleEnter}
                         resetMoveInput={this.state.resetMoveInput}
