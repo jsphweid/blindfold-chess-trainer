@@ -7,6 +7,7 @@ import { GameStateType } from './common/types'
 import EndingOverlay from './ending-overlay/ending-overlay'
 import FenSection from './fen-section/fen-section'
 import MoveInput from './move-input/move-input'
+import MoveSpeechInput from './move-speech-input/move-speech-input'
 
 export interface BlindfoldChessTrainerProps {
 }
@@ -109,6 +110,7 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
                 <div className="bct-chessboard">
                     <button onClick={this.playRandomGame}>Play Random Game</button>
                     <Chessboard allowMoves={false} pieces={this.state.allPositionsAsNotations} />
+                    <MoveSpeechInput />
                 </div>
                 <div className="bct-info">
                     {this.state.computerThinkingAboutNextMove ? <span style={{ fontSize: '20px' }}>Computer thinking...</span> : null}
