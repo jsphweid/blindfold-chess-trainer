@@ -1,3 +1,5 @@
+import { GameStateType } from '../common/types'
+
 const ChessEngineLibrary = require('./chess-engine-library')
 
 const MOVE_OPTIONS = {
@@ -38,25 +40,18 @@ export default class ChessEngine {
         }
     }
 
-    public gameCanContinue(): boolean {
+    public getGameState(): GameStateType {
         switch (true) {
             case this.chessEngine.in_stalemate():
-                console.log('in stalemate')
-                return false
+                return GameStateType.Stalemate
             case this.chessEngine.in_checkmate():
-                console.log('in checkmate')
-                return false
+                return GameStateType.Checkmate
             case this.chessEngine.in_threefold_repetition():
-                console.log('in threefold repetition')
-                return false
+                return GameStateType.ThreefoldRepetition
             case this.chessEngine.in_draw():
-                console.log('in draw')
-                return false
-            case this.chessEngine.game_over():
-                console.log('game over')
-                return false
+                return GameStateType.Draw
             default:
-                return true
+                return GameStateType.Playable
         }
     }
 

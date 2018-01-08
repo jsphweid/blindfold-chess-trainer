@@ -3,6 +3,8 @@ import * as Chessboard from 'react-chess'
 import { NotationType } from './common/generatedTypes'
 import ChessEngine from './chess-engine/chess-engine'
 import { getReactChessStateFromFen } from './common/helpers'
+import { GameStateType } from './common/types'
+import EndingOverlay from './ending-overlay/ending-overlay'
 
 export interface BlindfoldChessTrainerProps {
 }
@@ -129,6 +131,8 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
 
     render() {
 
+        const gameState: GameStateType = this.state.chessEngine.getGameState()
+
         return (
             <div className="bct">
                 <div className="bct-chessboard">
@@ -140,6 +144,7 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
                 {this.state.waitingToConfirmMove ? <h1>please confirm</h1> : null}
                 {this.renderFenStateAndLoader()}
                 <span style={{ color: 'red', fontWeight: 'bold' }}>{this.state.errorMessage}</span>
+                {gameState !== GameStateType.Playable ? <EndingOverlay gameState={gameState} /> : null}
             </div>
         )
 

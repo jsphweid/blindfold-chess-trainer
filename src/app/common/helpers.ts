@@ -24,3 +24,12 @@ export const getReactChessStateFromFen = (fen: string): NotationType[] => {
     })
     return ret
 }
+// export enum GameStateType {
+//     Stalemate,
+//     Checkmate,
+//     ThreefoldRepetition,
+//     Draw,
+//     Playable
+// }
+
+// export const
