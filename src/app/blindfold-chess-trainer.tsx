@@ -14,30 +14,74 @@ export interface BlindfoldChessTrainerProps {
 
 export interface BlindfoldChessTrainerState {
     allPositionsAsNotations: NotationType[]
-    chessEngine: ChessEngine
     waitingToConfirmMove: boolean
     moveErrorMessage: string
     computerThinkingAboutNextMove: boolean
     resetMoveInput: boolean
+    speechRecognitionSupported: boolean
 }
 
 export default class BlindfoldChessTrainer extends React.Component<BlindfoldChessTrainerProps, BlindfoldChessTrainerState> {
+
+    speechRecognizer: SpeechRecognition
+    chessEngine: ChessEngine = new ChessEngine()
 
     constructor(props: BlindfoldChessTrainerProps) {
         super(props)
 
         this.state = {
             allPositionsAsNotations: Chessboard.getDefaultLineup(),
-            chessEngine: new ChessEngine(),
             waitingToConfirmMove: false,
             moveErrorMessage: '',
             computerThinkingAboutNextMove: false,
-            resetMoveInput: false
+            resetMoveInput: false,
+            speechRecognitionSupported: null
         }
     }
 
+    componentDidMount() {
+        if (!('webkitSpeechRecognition' in window)) {
+            console.log('not supported') // change
+        } else {
+            const recognition: any = new webkitSpeechRecognition()
+            recognition.continuous = true
+            recognition.interimResults = true
+            recognition.lang = 'en-US'
+            recognition.maxAlternatives = 20
+            recognition.onresult = (event: any) => {
+                if (typeof(event.results) === 'undefined') {
+                    console.log('undefined...')
+                    recognition.stop()
+                    return
+                }
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        console.log('final results: ' + event.results[i][0].transcript)   // Of course – here is the place to do useful things with the results.
+                    } else {   // i.e. interim...
+                        console.log('interim results: ' + event.results[i][0].transcript)  // You can use these results to give the user near real time experience.
+                    }
+                }
+            }
+
+            recognition.onstart = (): void => {
+                console.log('speech recognition started')
+            }
+
+            recognition.onend = (): void => {
+                console.log('speech recognition ended')
+            }
+
+            recognition.start()
+
+            recognition.stop()
+        }
+
+    }
+
+
     syncGameState = (): void => {
-        const currentStateAsFen: string = this.state.chessEngine.getCurrentStateAsFen()
+        const currentStateAsFen: string = this.chessEngine.getCurrentStateAsFen()
         this.setState({ allPositionsAsNotations: getReactChessStateFromFen(currentStateAsFen), resetMoveInput: true })
     }
 
@@ -45,9 +89,9 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
         setTimeout(() => {
             this.setState({ computerThinkingAboutNextMove: true })
             setTimeout(() => {
-                const moves: any[] = this.state.chessEngine.getAllPossibleMoves()
+                const moves: any[] = this.chessEngine.getAllPossibleMoves()
                 const move = moves[Math.floor(Math.random() * moves.length)]
-                this.state.chessEngine.move(move)
+                this.chessEngine.move(move)
                 this.syncGameState()
                 this.setState({ computerThinkingAboutNextMove: false })
             }, 1000)
@@ -56,11 +100,11 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
 
     playRandomGame = (): void => {
         setTimeout(() => {
-            const moves: any[] = this.state.chessEngine.getAllPossibleMoves()
+            const moves: any[] = this.chessEngine.getAllPossibleMoves()
             const move = moves[Math.floor(Math.random() * moves.length)]
-            this.state.chessEngine.move(move)
+            this.chessEngine.move(move)
             this.syncGameState()
-            if (this.state.chessEngine.getGameState() === GameStateType.Playable) {
+            if (this.chessEngine.getGameState() === GameStateType.Playable) {
                 this.playRandomGame()
             }
         }, 10)
@@ -68,14 +112,14 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
 
     handleEnter = (move: string): void => {
         if (this.state.waitingToConfirmMove) {
-            const result = this.state.chessEngine.move(move)
+            const result = this.chessEngine.move(move)
             const moveErrorMessage: string = result ? '' : 'Failed to move piece.'
             this.setState({ moveErrorMessage, waitingToConfirmMove: false })
             this.syncGameState()
             if (!moveErrorMessage) this.computerMakesAMove()
         } else {
             if (move) {
-                if (this.state.chessEngine.moveIsValid(move)) {
+                if (this.chessEngine.moveIsValid(move)) {
                     this.setState({ waitingToConfirmMove: true, moveErrorMessage: '' })
                 } else {
                     this.setState({ moveErrorMessage: 'Please enter a VALID move...' })
@@ -89,13 +133,13 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
     renderWhoseTurn = (): JSX.Element => {
         return (
             <div>
-                <h1>{`It's ${this.state.chessEngine.isWhitesTurn() ? 'White\'s' : 'Black\'s' } turn!`}</h1>
+                <h1>{`It's ${this.chessEngine.isWhitesTurn() ? 'White\'s' : 'Black\'s' } turn!`}</h1>
             </div>
         )
     }
 
     handleLoadGameFromFen = (fen: string): boolean => {
-        const loadWasSuccessful = this.state.chessEngine.loadGameFromFenState(fen)
+        const loadWasSuccessful = this.chessEngine.loadGameFromFenState(fen)
         this.syncGameState()
         return loadWasSuccessful
     }
@@ -103,14 +147,16 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
 
     render() {
 
-        const gameState: GameStateType = this.state.chessEngine.getGameState()
+        const gameState: GameStateType = this.chessEngine.getGameState()
 
         return (
             <div className="bct">
                 <div className="bct-chessboard">
                     <button onClick={this.playRandomGame}>Play Random Game</button>
                     <Chessboard allowMoves={false} pieces={this.state.allPositionsAsNotations} />
-                    <MoveSpeechInput />
+                    <MoveSpeechInput
+
+                    />
                 </div>
                 <div className="bct-info">
                     {this.state.computerThinkingAboutNextMove ? <span style={{ fontSize: '20px' }}>Computer thinking...</span> : null}
@@ -124,7 +170,7 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
                     {this.state.waitingToConfirmMove ? <h1>please confirm by hitting enter again</h1> : null}
                     <FenSection
                         handleLoadGameFromFen={this.handleLoadGameFromFen}
-                        currentBoardStateAsFen={this.state.chessEngine.getCurrentStateAsFen()}
+                        currentBoardStateAsFen={this.chessEngine.getCurrentStateAsFen()}
                     />
                     {gameState !== GameStateType.Playable ? <EndingOverlay gameState={gameState} /> : null}
                 </div>
