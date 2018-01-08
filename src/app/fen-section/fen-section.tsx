@@ -28,7 +28,7 @@ export default class FenSection extends React.Component<FenSectionProps, FenSect
 
     renderErrorSection = (): JSX.Element => {
         return (
-            <div className="bct-fenSection-error">
+            <div className="bct-fenSection-errorMessage">
                 Could not load game from this FEN.
             </div>
         )

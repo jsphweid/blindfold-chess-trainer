@@ -1,8 +1,5 @@
 .bct-fenSection {
-    margin: 16px 0;
-    padding: 16px;
-    border: 1px solid black;
-    max-width: 500px;
+    @extend .bct-cheapBoxDiv;
 
     & > div {
         margin: 8px 0;
@@ -19,4 +16,9 @@
     div:first-child {
         font-weight: bold;
     }
+}
+
+.bct-fenSection-errorMessage {
+    margin: 8px 0;
+    @extend .bct-errorMessage;
 }

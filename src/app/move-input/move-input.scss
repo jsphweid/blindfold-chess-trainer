@@ -1,12 +1,14 @@
 .bct-moveInput {
 
+    @extend .bct-cheapBoxDiv;
+
     .bct-moveInput-instructions {
         margin: 16px 0;
     }
 
     .bct-moveInput-errorMessage {
-        color: red;
-        font-weight: bold;
+        margin: 8px 0;
+        @extend .bct-errorMessage;
     }
 
     input {
