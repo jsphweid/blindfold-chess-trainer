@@ -1,0 +1,22 @@
+.bct-fenSection {
+    margin: 16px 0;
+    padding: 16px;
+    border: 1px solid black;
+    max-width: 500px;
+
+    & > div {
+        margin: 8px 0;
+    }
+}
+
+.bct-fenSection-display {
+    div:first-child {
+        font-weight: bold;
+    }
+}
+
+.bct-fenSection-load {
+    div:first-child {
+        font-weight: bold;
+    }
+}

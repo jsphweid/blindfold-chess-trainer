@@ -1,7 +1,12 @@
 .bct {
-
+    display: flex;
 }
 
 .bct-chessboard {
-    width: 400px;
+    min-width: 400px;
+    margin: 16px;
+}
+
+.bct-info {
+    margin: 16px;
 }
