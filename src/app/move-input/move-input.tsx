@@ -2,8 +2,9 @@ import * as React from 'react'
 
 export interface MoveInputProps {
     handleEnter: (newMoveInput: string) => void
-        resetMoveInput: boolean
+    resetMoveInput: boolean
     resetMoveInputComplete: () => void
+    moveErrorMessage: string
 }
 
 export interface MoveInputState {
@@ -57,6 +58,9 @@ export default class MoveInput extends React.Component<MoveInputProps, MoveInput
                     onChange={(e) => this.setState({ newMoveInput: e.currentTarget.value })}
                     onKeyPress={(e) => (e.key === 'Enter') && this.props.handleEnter(this.state.newMoveInput)}
                 />
+                <div className="bct-moveInput-errorMessage">
+                    {this.props.moveErrorMessage}
+                </div>
             </div>
         )
     }

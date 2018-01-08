@@ -15,8 +15,7 @@ export interface BlindfoldChessTrainerState {
     allPositionsAsNotations: NotationType[]
     chessEngine: ChessEngine
     waitingToConfirmMove: boolean
-    errorMessage: any
-    fenInput: string
+    moveErrorMessage: string
     computerThinkingAboutNextMove: boolean
     resetMoveInput: boolean
 }
@@ -30,8 +29,7 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
             allPositionsAsNotations: Chessboard.getDefaultLineup(),
             chessEngine: new ChessEngine(),
             waitingToConfirmMove: false,
-            errorMessage: null,
-            fenInput: '',
+            moveErrorMessage: '',
             computerThinkingAboutNextMove: false,
             resetMoveInput: false
         }
@@ -58,17 +56,19 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
     handleEnter = (move: string): void => {
         if (this.state.waitingToConfirmMove) {
             const result = this.state.chessEngine.move(move)
-            const errorMessage: string = result ? '' : 'Failed to move piece.'
-            this.setState({ errorMessage, waitingToConfirmMove: false })
+            const moveErrorMessage: string = result ? '' : 'Failed to move piece.'
+            this.setState({ moveErrorMessage, waitingToConfirmMove: false })
             this.syncGameState()
-            if (!errorMessage) this.computerMakesAMove()
+            if (!moveErrorMessage) this.computerMakesAMove()
         } else {
             if (move) {
                 if (this.state.chessEngine.moveIsValid(move)) {
-                    this.setState({ waitingToConfirmMove: true })
+                    this.setState({ waitingToConfirmMove: true, moveErrorMessage: '' })
                 } else {
-                    this.setState({ errorMessage: 'Move is invalid.' })
+                    this.setState({ moveErrorMessage: 'Please enter a VALID move...' })
                 }
+            } else {
+                this.setState({ moveErrorMessage: 'Please enter a move...' })
             }
         }
     }
@@ -104,13 +104,13 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
                         handleEnter={this.handleEnter}
                         resetMoveInput={this.state.resetMoveInput}
                         resetMoveInputComplete={() => this.setState({ resetMoveInput: false })}
+                        moveErrorMessage={this.state.moveErrorMessage}
                     />
                     {this.state.waitingToConfirmMove ? <h1>please confirm by hitting enter again</h1> : null}
                     <FenSection
                         handleLoadGameFromFen={this.handleLoadGameFromFen}
                         currentBoardStateAsFen={this.state.chessEngine.getCurrentStateAsFen()}
                     />
-                    <span style={{ color: 'red', fontWeight: 'bold' }}>{this.state.errorMessage}</span>
                     {gameState !== GameStateType.Playable ? <EndingOverlay gameState={gameState} /> : null}
                 </div>
             </div>
