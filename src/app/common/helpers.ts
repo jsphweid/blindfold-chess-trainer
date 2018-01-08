@@ -1,11 +1,4 @@
-import { PositionType, NotationType } from './generatedTypes'
-import { PieceNameType, ReactChessPieceObjType } from './types'
-
-interface ReactChessMoveType {
-    piece: ReactChessPieceObjType
-    fromSquare: PositionType
-    toSquare: PositionType
-}
+import { NotationType } from './generatedTypes'
 
 export const getCharAsNumber = (char: string): number => parseInt(char, 10)
 export const charIsNumber = (char: string): boolean => !!parseInt(char, 10)

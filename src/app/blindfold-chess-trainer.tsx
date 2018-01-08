@@ -1,8 +1,12 @@
 import * as React from 'react'
 import * as Chessboard from 'react-chess'
-import { NotationType, PositionType } from './common/generatedTypes'
+import { NotationType } from './common/generatedTypes'
 import ChessEngine from './chess-engine/chess-engine'
 import { getReactChessStateFromFen } from './common/helpers'
+import { GameStateType } from './common/types'
+import EndingOverlay from './ending-overlay/ending-overlay'
+import FenSection from './fen-section/fen-section'
+import MoveInput from './move-input/move-input'
 
 export interface BlindfoldChessTrainerProps {
 }
@@ -10,53 +14,117 @@ export interface BlindfoldChessTrainerProps {
 export interface BlindfoldChessTrainerState {
     allPositionsAsNotations: NotationType[]
     chessEngine: ChessEngine
+    waitingToConfirmMove: boolean
+    moveErrorMessage: string
+    computerThinkingAboutNextMove: boolean
+    resetMoveInput: boolean
 }
 
 export default class BlindfoldChessTrainer extends React.Component<BlindfoldChessTrainerProps, BlindfoldChessTrainerState> {
 
     constructor(props: BlindfoldChessTrainerProps) {
-
         super(props)
 
         this.state = {
             allPositionsAsNotations: Chessboard.getDefaultLineup(),
-            chessEngine: new ChessEngine()
+            chessEngine: new ChessEngine(),
+            waitingToConfirmMove: false,
+            moveErrorMessage: '',
+            computerThinkingAboutNextMove: false,
+            resetMoveInput: false
         }
-        console.log('Chessboard.getDefaultLineup()', Chessboard.getDefaultLineup())
-
     }
 
-    testRandomMoves = (num: number): void => {
-        for (let i = 0; i < num; i++) {
-            if (this.state.chessEngine.gameCanContinue()) {
-                this.testRandomMove()
+    syncGameState = (): void => {
+        const currentStateAsFen: string = this.state.chessEngine.getCurrentStateAsFen()
+        this.setState({ allPositionsAsNotations: getReactChessStateFromFen(currentStateAsFen), resetMoveInput: true })
+    }
+
+    computerMakesAMove = (): void => {
+        setTimeout(() => {
+            this.setState({ computerThinkingAboutNextMove: true })
+            setTimeout(() => {
+                const moves: any[] = this.state.chessEngine.getAllPossibleMoves()
+                const move = moves[Math.floor(Math.random() * moves.length)]
+                this.state.chessEngine.move(move)
+                this.syncGameState()
+                this.setState({ computerThinkingAboutNextMove: false })
+            }, 1000)
+        }, 500)
+    }
+
+    playRandomGame = (): void => {
+        setTimeout(() => {
+            const moves: any[] = this.state.chessEngine.getAllPossibleMoves()
+            const move = moves[Math.floor(Math.random() * moves.length)]
+            this.state.chessEngine.move(move)
+            this.syncGameState()
+            if (this.state.chessEngine.getGameState() === GameStateType.Playable) {
+                this.playRandomGame()
+            }
+        }, 10)
+    }
+
+    handleEnter = (move: string): void => {
+        if (this.state.waitingToConfirmMove) {
+            const result = this.state.chessEngine.move(move)
+            const moveErrorMessage: string = result ? '' : 'Failed to move piece.'
+            this.setState({ moveErrorMessage, waitingToConfirmMove: false })
+            this.syncGameState()
+            if (!moveErrorMessage) this.computerMakesAMove()
+        } else {
+            if (move) {
+                if (this.state.chessEngine.moveIsValid(move)) {
+                    this.setState({ waitingToConfirmMove: true, moveErrorMessage: '' })
+                } else {
+                    this.setState({ moveErrorMessage: 'Please enter a VALID move...' })
+                }
             } else {
-                break
+                this.setState({ moveErrorMessage: 'Please enter a move...' })
             }
         }
     }
 
-    testRandomMove = (): void => {
-        const moves: any[] = this.state.chessEngine.getAllPossibleMoves()
-        const move = moves[Math.floor(Math.random() * moves.length)]
-        const result = this.state.chessEngine.attemptMove(move)
-        const currentStateAsFen: string = this.state.chessEngine.getCurrentStateAsFen()
-        this.setState({ allPositionsAsNotations: getReactChessStateFromFen(currentStateAsFen) })
+    renderWhoseTurn = (): JSX.Element => {
+        return (
+            <div>
+                <h1>{`It's ${this.state.chessEngine.isWhitesTurn() ? 'White\'s' : 'Black\'s' } turn!`}</h1>
+            </div>
+        )
     }
 
-    attemptToMovePiece = (): void => {
-        console.log('what')
+    handleLoadGameFromFen = (fen: string): boolean => {
+        const loadWasSuccessful = this.state.chessEngine.loadGameFromFenState(fen)
+        this.syncGameState()
+        return loadWasSuccessful
     }
+
 
     render() {
-        this.state.chessEngine.getAllPossibleMoves()
+
+        const gameState: GameStateType = this.state.chessEngine.getGameState()
 
         return (
             <div className="bct">
-                <button onClick={this.attemptToMovePiece}>test move</button>
-                <button onClick={() => this.testRandomMoves(3000)}>random move</button>
                 <div className="bct-chessboard">
-                    <Chessboard pieces={this.state.allPositionsAsNotations} />
+                    <button onClick={this.playRandomGame}>Play Random Game</button>
+                    <Chessboard allowMoves={false} pieces={this.state.allPositionsAsNotations} />
+                </div>
+                <div className="bct-info">
+                    {this.state.computerThinkingAboutNextMove ? <span style={{ fontSize: '20px' }}>Computer thinking...</span> : null}
+                    {this.renderWhoseTurn()}
+                    <MoveInput
+                        handleEnter={this.handleEnter}
+                        resetMoveInput={this.state.resetMoveInput}
+                        resetMoveInputComplete={() => this.setState({ resetMoveInput: false })}
+                        moveErrorMessage={this.state.moveErrorMessage}
+                    />
+                    {this.state.waitingToConfirmMove ? <h1>please confirm by hitting enter again</h1> : null}
+                    <FenSection
+                        handleLoadGameFromFen={this.handleLoadGameFromFen}
+                        currentBoardStateAsFen={this.state.chessEngine.getCurrentStateAsFen()}
+                    />
+                    {gameState !== GameStateType.Playable ? <EndingOverlay gameState={gameState} /> : null}
                 </div>
             </div>
         )

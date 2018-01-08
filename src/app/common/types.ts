@@ -1,12 +1,7 @@
-import { PositionType, NotationType } from './generatedTypes'
-
-export type BlackPieceNameType = 'p' | 'r' | 'n' | 'b' | 'k' | 'q'
-export type WhitePieceNameType = 'P' | 'R' | 'N' | 'B' | 'K' | 'Q'
-export type PieceNameType = BlackPieceNameType | WhitePieceNameType
-
-export interface ReactChessPieceObjType {
-    name: PieceNameType
-    position: PositionType
-    index: number
-    notation: NotationType
+export enum GameStateType {
+    Stalemate = 'The game has ended in a stalemate.',
+    Checkmate = 'Checkmate!',
+    ThreefoldRepetition = 'The game has ended because of the threefold repetition rule.',
+    Draw = 'The game has ended in a draw.',
+    Playable = 'The game is not over yet!'
 }

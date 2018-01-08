@@ -1,7 +1,31 @@
 .bct {
-
+    display: flex;
 }
 
 .bct-chessboard {
-    width: 600px;
+    min-width: 400px;
+    margin: 16px;
+
+    button {
+        margin: 16px 0;
+    }
+}
+
+.bct-info {
+    margin: 16px;
+}
+
+
+// globals
+
+.bct-errorMessage {
+    color: red;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.bct-cheapBoxDiv {
+    margin: 16px 0;
+    padding: 16px;
+    border: 1px solid black;
 }

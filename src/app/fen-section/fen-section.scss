@@ -1,0 +1,24 @@
+.bct-fenSection {
+    @extend .bct-cheapBoxDiv;
+
+    & > div {
+        margin: 8px 0;
+    }
+}
+
+.bct-fenSection-display {
+    div:first-child {
+        font-weight: bold;
+    }
+}
+
+.bct-fenSection-load {
+    div:first-child {
+        font-weight: bold;
+    }
+}
+
+.bct-fenSection-errorMessage {
+    margin: 8px 0;
+    @extend .bct-errorMessage;
+}

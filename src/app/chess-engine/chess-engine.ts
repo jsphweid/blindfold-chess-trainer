@@ -1,4 +1,10 @@
+import { GameStateType } from '../common/types'
+
 const ChessEngineLibrary = require('./chess-engine-library')
+
+const MOVE_OPTIONS = {
+    sloppy: true
+}
 
 export default class ChessEngine {
 
@@ -8,39 +14,49 @@ export default class ChessEngine {
         this.chessEngine = new ChessEngineLibrary()
     }
 
-    public getAllPossibleMoves(): any {
-        console.log('possible moves', this.chessEngine.moves())
+    public getAllPossibleMoves(): string[] {
         return this.chessEngine.moves()
     }
 
-    public attemptMove(move: any): any {
-        return this.chessEngine.move(move)
+    public move(move: any): any {
+        return this.chessEngine.move(move, MOVE_OPTIONS)
     }
 
     public getCurrentStateAsFen(): string {
         return this.chessEngine.fen()
     }
 
-    public gameCanContinue(): boolean {
+    public loadGameFromFenState(fen: string): boolean {
+        return this.chessEngine.load(fen)
+    }
+
+    public moveIsValid(move: any): boolean {
+        const success: boolean = this.chessEngine.move(move, MOVE_OPTIONS)
+        if (success) {
+            this.chessEngine.undo()
+            return true
+        } else {
+            return false
+        }
+    }
+
+    public getGameState(): GameStateType {
         switch (true) {
             case this.chessEngine.in_stalemate():
-                console.log('in stalemate')
-                return false
+                return GameStateType.Stalemate
             case this.chessEngine.in_checkmate():
-                console.log('in checkmate')
-                return false
+                return GameStateType.Checkmate
             case this.chessEngine.in_threefold_repetition():
-                console.log('in threefold repetition')
-                return false
+                return GameStateType.ThreefoldRepetition
             case this.chessEngine.in_draw():
-                console.log('in draw')
-                return false
-            case this.chessEngine.game_over():
-                console.log('game over')
-                return false
+                return GameStateType.Draw
             default:
-                return true
+                return GameStateType.Playable
         }
+    }
+
+    public isWhitesTurn(): boolean {
+        return this.chessEngine.turn() === 'w'
     }
 
 }
