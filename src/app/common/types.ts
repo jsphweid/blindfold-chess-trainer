@@ -24,3 +24,12 @@ export interface FoundPositionType {
     indexOfFirstLetter: number
     position: PositionType
 }
+
+export interface ChessJSMoveDetailType {
+    color: string
+    from: string
+    to: string
+    flags: string
+    piece: string
+    san: string
+}

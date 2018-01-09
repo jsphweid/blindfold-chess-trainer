@@ -6,6 +6,9 @@ const { Listening, Speaking, Thinking, Inactive } = SpeechStateType
 
 export interface MoveSpeechInputProps {
     handleMoveSubmit: (move: string) => void
+    resetWaitingToConfirm: () => void
+    moveErrorMessage: string
+    blackMoveMessage: string
 }
 
 export interface MoveSpeechInputState {
@@ -15,11 +18,13 @@ export interface MoveSpeechInputState {
     speechEvents: SpeechRecognitionResult[]
     confirmingMove: string
     speechState: SpeechStateType
+    safetySpacebarIsPressed: boolean
 }
 
 export default class MoveSpeechInput extends React.Component<MoveSpeechInputProps, MoveSpeechInputState> {
 
     speechRecognizer: SpeechRecognition
+    speechSynth: SpeechSynthesis
 
     constructor(props: MoveSpeechInputProps) {
         super(props)
@@ -30,19 +35,47 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
             confirmMessage: '',
             speechEvents: [],
             confirmingMove: null,
-            speechState: Inactive
+            speechState: Inactive,
+            safetySpacebarIsPressed: false
         }
     }
 
+    browserIsSupported = (): boolean => 'webkitSpeechRecognition' in window && 'speechSynthesis' in window
+
     componentDidMount() {
-        if (!('webkitSpeechRecognition' in window)) {
+        if (!this.browserIsSupported) {
             this.setState({ speechRecognitionSupportedAndOperational: false })
         } else {
             this.speechRecognizer = new webkitSpeechRecognition()
             this.setState({ speechRecognitionSupportedAndOperational: true })
-            this.initializeSpeechRecognizer()
             this.initializeSpacebarHandler()
+            this.initializeSpeechRecognizer()
+            this.initializeSpeechSynth()
         }
+    }
+
+    componentWillUpdate(nextProps: MoveSpeechInputProps, nextState: MoveSpeechInputState) {
+        if (this.state.info !== nextState.info) {
+            this.speak(nextState.info)
+        }
+        if (this.props.blackMoveMessage !== nextProps.blackMoveMessage) {
+            this.speak(nextProps.blackMoveMessage)
+        }
+    }
+
+    initializeSpeechSynth = (): void => {
+        this.speechSynth = window.speechSynthesis
+    }
+
+    speak = (text: string): void => {
+        if (!this.speechSynth) return null
+        const msg: SpeechSynthesisUtterance = new SpeechSynthesisUtterance()
+        msg.text = text
+        msg.volume = 1
+        msg.rate = 1
+        msg.pitch = 1
+        msg.voice = speechSynthesis.getVoices().filter((voice) => voice.name === 'Google UK English Female')[0]
+        this.speechSynth.speak(msg)
     }
 
     initializeSpeechRecognizer = (): void => {
@@ -68,13 +101,16 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
 
     initializeSpacebarHandler = (): void => {
         document.addEventListener('keydown', (keyEvent: KeyboardEvent) => {
-            if (keyEvent.code === 'Space' && this.state.speechState !== Listening) {
+            if (keyEvent.code === 'Space' && this.state.speechState !== Listening && !this.state.safetySpacebarIsPressed) {
+                this.props.resetWaitingToConfirm()
+                this.speechSynth.cancel()
                 this.speechRecognizer.start()
+                this.setState({ safetySpacebarIsPressed: true })
             }
         })
         document.addEventListener('keyup', (keyEvent: KeyboardEvent) => {
             if (keyEvent.code === 'Space') {
-                this.setState({ speechState: Thinking })
+                this.setState({ speechState: Thinking, safetySpacebarIsPressed: false })
                 this.speechRecognizer.stop()
             }
         })
@@ -95,6 +131,7 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
     }
 
     handleReset = (): void => {
+        this.props.resetWaitingToConfirm()
         this.setState({
             speechState: SpeechStateType.Inactive,
             info: '',
@@ -105,8 +142,12 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
     }
 
     handleConfirmMove = (confirmingMove: string): void => {
-        this.props.handleMoveSubmit(confirmingMove.toLowerCase())
-        this.handleReset()
+        if (this.props.moveErrorMessage) {
+            this.setState({ info: this.props.moveErrorMessage, confirmingMove: null })
+        } else {
+            this.props.handleMoveSubmit(confirmingMove.toLowerCase())
+            this.handleReset()
+        }
     }
 
     renderInteractiveComputerModal = (): JSX.Element => {

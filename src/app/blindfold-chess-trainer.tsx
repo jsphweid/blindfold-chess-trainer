@@ -2,8 +2,8 @@ import * as React from 'react'
 import * as Chessboard from 'react-chess'
 import { NotationType } from './common/generatedTypes'
 import ChessEngine from './chess-engine/chess-engine'
-import { getReactChessStateFromFen } from './common/helpers'
-import { GameStateType } from './common/types'
+import { getReactChessStateFromFen, generateBlackMoveMessage } from './common/helpers'
+import { GameStateType, ChessJSMoveDetailType } from './common/types'
 import EndingOverlay from './ending-overlay/ending-overlay'
 import FenSection from './fen-section/fen-section'
 import MoveInput from './move-input/move-input'
@@ -18,6 +18,7 @@ export interface BlindfoldChessTrainerState {
     moveErrorMessage: string
     computerThinkingAboutNextMove: boolean
     resetMoveInput: boolean
+    blackMoveMessage: string
 }
 
 export default class BlindfoldChessTrainer extends React.Component<BlindfoldChessTrainerProps, BlindfoldChessTrainerState> {
@@ -31,26 +32,28 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
             allPositionsAsNotations: Chessboard.getDefaultLineup(),
             waitingToConfirmMove: false,
             moveErrorMessage: '',
+            blackMoveMessage: '',
             computerThinkingAboutNextMove: false,
-            resetMoveInput: false,
+            resetMoveInput: false
         }
     }
 
 
     syncGameState = (): void => {
         const currentStateAsFen: string = this.chessEngine.getCurrentStateAsFen()
-        this.setState({ allPositionsAsNotations: getReactChessStateFromFen(currentStateAsFen), resetMoveInput: true })
+        this.setState({ allPositionsAsNotations: getReactChessStateFromFen(currentStateAsFen) })
     }
 
     computerMakesAMove = (): void => {
         setTimeout(() => {
             this.setState({ computerThinkingAboutNextMove: true })
             setTimeout(() => {
-                const moves: any[] = this.chessEngine.getAllPossibleMoves()
-                const move = moves[Math.floor(Math.random() * moves.length)]
-                this.chessEngine.move(move)
+                const moves: string[] = this.chessEngine.getAllPossibleMoves()
+                const move: string = moves[Math.floor(Math.random() * moves.length)]
+                const moveDetails: ChessJSMoveDetailType = this.chessEngine.move(move)
+                const blackMoveMessage = generateBlackMoveMessage(moveDetails)
                 this.syncGameState()
-                this.setState({ computerThinkingAboutNextMove: false })
+                this.setState({ blackMoveMessage, computerThinkingAboutNextMove: false })
             }, 1000)
         }, 500)
     }
@@ -79,20 +82,12 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
                 if (this.chessEngine.moveIsValid(move)) {
                     this.setState({ waitingToConfirmMove: true, moveErrorMessage: '' })
                 } else {
-                    this.setState({ moveErrorMessage: 'Please enter a VALID move...' })
+                    this.setState({ moveErrorMessage: `That's not a valid move...` })
                 }
             } else {
                 this.setState({ moveErrorMessage: 'Please enter a move...' })
             }
         }
-    }
-
-    renderWhoseTurn = (): JSX.Element => {
-        return (
-            <div>
-                <h1>{`It's ${this.chessEngine.isWhitesTurn() ? 'White\'s' : 'Black\'s' } turn!`}</h1>
-            </div>
-        )
     }
 
     handleLoadGameFromFen = (fen: string): boolean => {
@@ -101,6 +96,15 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
         return loadWasSuccessful
     }
 
+    handleResetWaitingToConfirm = (): void => this.setState({ waitingToConfirmMove: false })
+
+    renderWhoseTurn = (): JSX.Element => {
+        return (
+            <div>
+                <h1>{`It's ${this.chessEngine.isWhitesTurn() ? 'White\'s' : 'Black\'s' } turn!`}</h1>
+            </div>
+        )
+    }
 
     render() {
 
@@ -113,6 +117,9 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
                     <Chessboard allowMoves={false} pieces={this.state.allPositionsAsNotations} />
                     <MoveSpeechInput
                         handleMoveSubmit={this.handleEnter}
+                        resetWaitingToConfirm={this.handleResetWaitingToConfirm}
+                        moveErrorMessage={this.state.moveErrorMessage}
+                        blackMoveMessage={this.state.blackMoveMessage}
                     />
                 </div>
                 <div className="bct-info">

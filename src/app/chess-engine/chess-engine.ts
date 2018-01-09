@@ -1,4 +1,4 @@
-import { GameStateType } from '../common/types'
+import { GameStateType, ChessJSMoveDetailType } from '../common/types'
 
 const ChessEngineLibrary = require('./chess-engine-library')
 
@@ -18,7 +18,7 @@ export default class ChessEngine {
         return this.chessEngine.moves()
     }
 
-    public move(move: any): any {
+    public move(move: string): ChessJSMoveDetailType {
         return this.chessEngine.move(move, MOVE_OPTIONS)
     }
 
@@ -30,7 +30,7 @@ export default class ChessEngine {
         return this.chessEngine.load(fen)
     }
 
-    public moveIsValid(move: any): boolean {
+    public moveIsValid(move: string): boolean {
         const success: boolean = this.chessEngine.move(move, MOVE_OPTIONS)
         if (success) {
             this.chessEngine.undo()

@@ -1,5 +1,5 @@
 import { NotationType, PositionType } from './generatedTypes'
-import { ReformulatedSpeechResultType, FoundPositionType } from './types'
+import { ReformulatedSpeechResultType, FoundPositionType, ChessJSMoveDetailType } from './types'
 import { positions } from './constants'
 
 export const getCharAsNumber = (char: string): number => parseInt(char, 10)
@@ -60,4 +60,8 @@ export const computerMVPGuess = (rawResults: string[]): string => {
 
 export const generateConfirmMessage = (move: string): string => {
     return `${move.slice(0, 2)} goes to ${move.slice(2, 4)}?`
+}
+
+export const generateBlackMoveMessage = (moveDetail: ChessJSMoveDetailType): string => {
+    return `Black moves from ${moveDetail.from} to ${moveDetail.to}.`
 }
