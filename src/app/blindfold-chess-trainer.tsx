@@ -111,7 +111,9 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
                 <div className="bct-chessboard">
                     <button onClick={this.playRandomGame}>Play Random Game</button>
                     <Chessboard allowMoves={false} pieces={this.state.allPositionsAsNotations} />
-                    <MoveSpeechInput />
+                    <MoveSpeechInput
+                        handleMoveSubmit={this.handleEnter}
+                    />
                 </div>
                 <div className="bct-info">
                     {this.state.computerThinkingAboutNextMove ? <span style={{ fontSize: '20px' }}>Computer thinking...</span> : null}

@@ -1,15 +1,20 @@
 import * as React from 'react'
-import { SpeechResultType } from '../common/types'
+import { reformulateSpeechEvents, computerMVPGuess, generateConfirmMessage } from '../common/helpers'
+import { SpeechStateType } from '../common/types'
+import InteractiveComputerModal from './interactive-computer-modal'
+const { Listening, Speaking, Thinking, Inactive } = SpeechStateType
 
 export interface MoveSpeechInputProps {
+    handleMoveSubmit: (move: string) => void
 }
 
 export interface MoveSpeechInputState {
     speechRecognitionSupportedAndOperational: boolean
     info: string
+    confirmMessage: string
     speechEvents: SpeechRecognitionResult[]
-    listening: boolean
-    processing: boolean
+    confirmingMove: string
+    speechState: SpeechStateType
 }
 
 export default class MoveSpeechInput extends React.Component<MoveSpeechInputProps, MoveSpeechInputState> {
@@ -22,9 +27,10 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
         this.state = {
             speechRecognitionSupportedAndOperational: null,
             info: '',
+            confirmMessage: '',
             speechEvents: [],
-            listening: false,
-            processing: false
+            confirmingMove: null,
+            speechState: Inactive
         }
     }
 
@@ -37,7 +43,6 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
             this.initializeSpeechRecognizer()
             this.initializeSpacebarHandler()
         }
-
     }
 
     initializeSpeechRecognizer = (): void => {
@@ -46,23 +51,30 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
         this.speechRecognizer.lang = 'en-US'
         this.speechRecognizer.maxAlternatives = 10
         this.speechRecognizer.onresult = this.handleEventStream
-        this.speechRecognizer.onstart = (): void => this.setState({ speechEvents: [], info: '', listening: true  })
+        this.speechRecognizer.onstart = (): void => this.setState({ speechEvents: [], info: '', speechState: Listening  })
         this.speechRecognizer.onend = this.processSpeechEvents
     }
 
     processSpeechEvents = (): void => {
-        this.setState({ listening: false, processing: true })
+        const topResults: string[] = reformulateSpeechEvents(this.state.speechEvents).final
+        const easyGuess: string = computerMVPGuess(topResults)
+        if (easyGuess) {
+            this.props.handleMoveSubmit(easyGuess.toLowerCase())
+            this.setState({ speechState: Speaking, info: generateConfirmMessage(easyGuess), confirmingMove: easyGuess })
+        } else {
+            this.setState({ speechState: Speaking, info: `I'm sorry. I did not understand. Try again.` })
+        }
     }
 
     initializeSpacebarHandler = (): void => {
-
         document.addEventListener('keydown', (keyEvent: KeyboardEvent) => {
-            if (keyEvent.code === 'Space' && !this.state.listening && this.state.speechEvents.length === 0) {
+            if (keyEvent.code === 'Space' && this.state.speechState !== Listening) {
                 this.speechRecognizer.start()
             }
         })
         document.addEventListener('keyup', (keyEvent: KeyboardEvent) => {
             if (keyEvent.code === 'Space') {
+                this.setState({ speechState: Thinking })
                 this.speechRecognizer.stop()
             }
         })
@@ -76,16 +88,44 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
         }
 
         for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-                // do something by iterating over results
-            }
+            const speechEventsClone: SpeechRecognitionResult[] = this.state.speechEvents.slice()
+            speechEventsClone.push(event.results[i])
+            this.setState({ speechEvents: speechEventsClone })
         }
+    }
 
+    handleReset = (): void => {
+        this.setState({
+            speechState: SpeechStateType.Inactive,
+            info: '',
+            confirmMessage: '',
+            speechEvents: [],
+            confirmingMove: null
+        })
+    }
+
+    handleConfirmMove = (confirmingMove: string): void => {
+        this.props.handleMoveSubmit(confirmingMove.toLowerCase())
+        this.handleReset()
+    }
+
+    renderInteractiveComputerModal = (): JSX.Element => {
+        const { speechState, confirmingMove, info } = this.state
+
+        return (
+            <InteractiveComputerModal
+                speechState={speechState}
+                confirmingMove={confirmingMove}
+                info={info}
+                handleEscape={this.handleReset}
+                handleConfirmMove={this.handleConfirmMove.bind(this, confirmingMove)}
+            />
+        )
     }
 
     renderSpeechRecognitionContent = (): JSX.Element => {
-
-        switch (this.state.speechRecognitionSupportedAndOperational) {
+        const { speechState, speechRecognitionSupportedAndOperational } = this.state
+        switch (speechRecognitionSupportedAndOperational) {
             default:
             case null:
                 return <div>Attempting to load Web Speech...</div>
@@ -94,18 +134,21 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
             case true:
                 return (
                     <div>
-                        {this.state.listening ? <h3>listening...</h3> : null}
-                        {this.state.processing ? <h3>processing...</h3> : null}
+                        {speechState !== SpeechStateType.Inactive ? this.renderInteractiveComputerModal() : null}
                     </div>
                 )
         }
-
     }
 
     render() {
         return (
             <div className="bct-moveSpeechInput">
                 <h2>Practice Using Speech</h2>
+                <p>
+                    Press Spacebar so the computer can listen. For now, it can only
+                    understand this basic yet explicit notation -- "a3 takes a4" or 
+                    "a3 moves to a4".
+                </p>
                 {this.renderSpeechRecognitionContent()}
             </div>
         )

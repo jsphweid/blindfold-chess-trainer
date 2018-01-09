@@ -1,3 +1,5 @@
+import { PositionType } from './generatedTypes'
+
 export enum GameStateType {
     Stalemate = 'The game has ended in a stalemate.',
     Checkmate = 'Checkmate!',
@@ -6,7 +8,19 @@ export enum GameStateType {
     Playable = 'The game is not over yet!'
 }
 
-export interface SpeechResultType {
+export enum SpeechStateType {
+    Listening = 'Listening...',
+    Thinking = 'Thinking...',
+    Speaking = 'Speaking...',
+    Inactive = ''
+}
+
+export interface ReformulatedSpeechResultType {
     temps: string[]
-    final: string
+    final: string[]
+}
+
+export interface FoundPositionType {
+    indexOfFirstLetter: number
+    position: PositionType
 }
