@@ -18,12 +18,10 @@ export interface BlindfoldChessTrainerState {
     moveErrorMessage: string
     computerThinkingAboutNextMove: boolean
     resetMoveInput: boolean
-    speechRecognitionSupported: boolean
 }
 
 export default class BlindfoldChessTrainer extends React.Component<BlindfoldChessTrainerProps, BlindfoldChessTrainerState> {
 
-    speechRecognizer: SpeechRecognition
     chessEngine: ChessEngine = new ChessEngine()
 
     constructor(props: BlindfoldChessTrainerProps) {
@@ -35,48 +33,7 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
             moveErrorMessage: '',
             computerThinkingAboutNextMove: false,
             resetMoveInput: false,
-            speechRecognitionSupported: null
         }
-    }
-
-    componentDidMount() {
-        if (!('webkitSpeechRecognition' in window)) {
-            console.log('not supported') // change
-        } else {
-            const recognition: any = new webkitSpeechRecognition()
-            recognition.continuous = true
-            recognition.interimResults = true
-            recognition.lang = 'en-US'
-            recognition.maxAlternatives = 20
-            recognition.onresult = (event: any) => {
-                if (typeof(event.results) === 'undefined') {
-                    console.log('undefined...')
-                    recognition.stop()
-                    return
-                }
-
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        console.log('final results: ' + event.results[i][0].transcript)   // Of course – here is the place to do useful things with the results.
-                    } else {   // i.e. interim...
-                        console.log('interim results: ' + event.results[i][0].transcript)  // You can use these results to give the user near real time experience.
-                    }
-                }
-            }
-
-            recognition.onstart = (): void => {
-                console.log('speech recognition started')
-            }
-
-            recognition.onend = (): void => {
-                console.log('speech recognition ended')
-            }
-
-            recognition.start()
-
-            recognition.stop()
-        }
-
     }
 
 
@@ -154,9 +111,7 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
                 <div className="bct-chessboard">
                     <button onClick={this.playRandomGame}>Play Random Game</button>
                     <Chessboard allowMoves={false} pieces={this.state.allPositionsAsNotations} />
-                    <MoveSpeechInput
-
-                    />
+                    <MoveSpeechInput />
                 </div>
                 <div className="bct-info">
                     {this.state.computerThinkingAboutNextMove ? <span style={{ fontSize: '20px' }}>Computer thinking...</span> : null}
