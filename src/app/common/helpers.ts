@@ -1,6 +1,9 @@
 import { NotationType, PositionType } from './generatedTypes'
-import { ReformulatedSpeechResultType, FoundPositionType, ChessJSMoveDetailType } from './types'
-import { positions } from './constants'
+import {
+    ReformulatedSpeechResultType, FoundPositionType, ChessJSMoveDetailType, KeyWordType,
+    ValidPieceOrPositionType
+} from './types'
+import { validPositionsAndPieces } from './constants'
 
 export const getCharAsNumber = (char: string): number => parseInt(char, 10)
 export const charIsNumber = (char: string): boolean => !!parseInt(char, 10)
@@ -42,21 +45,58 @@ export const reformulateSpeechEvents = (results: SpeechRecognitionResult[]): Ref
     return reformulated
 }
 
+const tryToFindKeyWords = (str: string): KeyWordType[] => {
+    const lowerCasedResult: string = str.toLowerCase()
+    const keyWords: KeyWordType[] = []
+    validPositionsAndPieces.forEach((position: PositionType) => {
+        const indexOfFirstLetter: number = lowerCasedResult.indexOf(position)
+        if (indexOfFirstLetter !== -1) keyWords.push({ indexOfFirstLetter, position })
+    })
+    return keyWords
+}
+
+const convertCloseWords = (word: string): ValidPieceOrPositionType => {
+
+}
+
 export const computerMVPGuess = (rawResults: string[]): string => {
     let ret: string = null
     rawResults.forEach((result: string) => {
-        const foundPositions = [] as FoundPositionType[]
-        positions.forEach((position: PositionType) => {
-            const indexOfFirstLetter: number = result.indexOf(position)
-            if (indexOfFirstLetter !== -1) foundPositions.push({ indexOfFirstLetter, position })
-        })
-        if (foundPositions.length === 2) {
-            foundPositions.sort((a, b) => a.indexOfFirstLetter - b.indexOfFirstLetter)
-            ret = foundPositions.map((foundPosition: FoundPositionType) => foundPosition.position).join('')
+
+        const keyWords: KeyWordType[] = tryToFindKeyWords(result)
+        switch (keyWords.length) {
+            default:
+            case 1:
+                break // temp, handle pawn movements...
+            case 2:
+                keyWords.sort((a, b) => a.indexOfFirstLetter - b.indexOfFirstLetter)
+                const cleanedWords =
+                ret = keyWords.map((foundPosition: FoundPositionType) => foundPosition.position).join('')
+                break
+            case 0:
+                break
         }
+
     })
     return ret
 }
+
+///////////////// LEGACY
+// export const computerMVPGuess = (rawResults: string[]): string => {
+//     let ret: string = null
+//     rawResults.forEach((result: string) => {
+//         const foundPositions = [] as FoundPositionType[]
+//         positions.forEach((position: PositionType) => {
+//             const indexOfFirstLetter: number = result.indexOf(position)
+//             if (indexOfFirstLetter !== -1) foundPositions.push({ indexOfFirstLetter, position })
+//         })
+//         if (foundPositions.length === 2) {
+//             foundPositions.sort((a, b) => a.indexOfFirstLetter - b.indexOfFirstLetter)
+//             ret = foundPositions.map((foundPosition: FoundPositionType) => foundPosition.position).join('')
+//         }
+//     })
+//     return ret
+// }
 
 export const generateConfirmMessage = (move: string): string => {
     return `${move.slice(0, 2)} goes to ${move.slice(2, 4)}?`

@@ -20,7 +20,7 @@ export interface ReformulatedSpeechResultType {
     final: string[]
 }
 
-export interface FoundPositionType {
+export interface KeyWordType {
     indexOfFirstLetter: number
     position: PositionType
 }
@@ -33,3 +33,7 @@ export interface ChessJSMoveDetailType {
     piece: string
     san: string
 }
+
+export type ValidPieceOrPositionType = PositionType | 'rook' | 'knight' | 'bishop' | 'queen' | 'king' | 'pawn'
+
+// export type FoundPositionOrPieceType =
