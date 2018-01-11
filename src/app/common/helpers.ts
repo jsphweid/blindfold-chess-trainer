@@ -1,9 +1,9 @@
 import { NotationType, PositionType } from './generatedTypes'
 import {
-    ReformulatedSpeechResultType, FoundPositionType, ChessJSMoveDetailType, KeyWordType,
-    ValidPieceOrPositionType
+    ReformulatedSpeechResultType, ChessJSMoveDetailType, KeyWordObjType,
+    ValidPieceOrPositionType, SemiValidPieceOrPositionType
 } from './types'
-import { validPositionsAndPieces } from './constants'
+import { semiValidPositionsAndPieces } from './constants'
 
 export const getCharAsNumber = (char: string): number => parseInt(char, 10)
 export const charIsNumber = (char: string): boolean => !!parseInt(char, 10)
@@ -45,41 +45,50 @@ export const reformulateSpeechEvents = (results: SpeechRecognitionResult[]): Ref
     return reformulated
 }
 
-const tryToFindKeyWords = (str: string): KeyWordType[] => {
-    const lowerCasedResult: string = str.toLowerCase()
-    const keyWords: KeyWordType[] = []
-    validPositionsAndPieces.forEach((position: PositionType) => {
-        const indexOfFirstLetter: number = lowerCasedResult.indexOf(position)
-        if (indexOfFirstLetter !== -1) keyWords.push({ indexOfFirstLetter, position })
+export const tryToFindKeyWords = (str: string): SemiValidPieceOrPositionType[] => {
+    const lowerCasedResult: string = ` ${str.toLowerCase()} `
+    const keyWordObjs: KeyWordObjType[] = []
+    semiValidPositionsAndPieces.forEach((pieceOrPosition: SemiValidPieceOrPositionType) => {
+        const indexOfFirstLetter: number = lowerCasedResult.indexOf(` ${pieceOrPosition} `)
+        if (indexOfFirstLetter !== -1) keyWordObjs.push({ indexOfFirstLetter, pieceOrPosition })
     })
-    return keyWords
+    return keyWordObjs
+        .sort((a, b) => a.indexOfFirstLetter - b.indexOfFirstLetter)
+        .map((keyWord: KeyWordObjType) => keyWord.pieceOrPosition)
 }
 
-const convertCloseWords = (word: string): ValidPieceOrPositionType => {
-
+const cleanAllKeyWords = (keyWords: SemiValidPieceOrPositionType[]): ValidPieceOrPositionType[] => {
+    return keyWords.map((keyWord: SemiValidPieceOrPositionType) => {
+        return keyWord as ValidPieceOrPositionType // magic for now
+    })
 }
 
 export const computerMVPGuess = (rawResults: string[]): string => {
     let ret: string = null
+    const possibleGuesses: SemiValidPieceOrPositionType[][] = []
     rawResults.forEach((result: string) => {
-
-        const keyWords: KeyWordType[] = tryToFindKeyWords(result)
-        switch (keyWords.length) {
-            default:
-            case 1:
-                break // temp, handle pawn movements...
-            case 2:
-                keyWords.sort((a, b) => a.indexOfFirstLetter - b.indexOfFirstLetter)
-                const cleanedWords =
-                ret = keyWords.map((foundPosition: FoundPositionType) => foundPosition.position).join('')
-                break
-            case 0:
-                break
+        const foundKeyWords = tryToFindKeyWords(result)
+        if (foundKeyWords.length === 1 || foundKeyWords.length === 2) {
+            possibleGuesses.push(foundKeyWords)
         }
-
     })
-    return ret
+    if (possibleGuesses.length === 0) {}
+    return 'test'
 }
+
+// write tests around this above....
+
+// switch (keyWords.length) {
+//     default:
+//     case 1:
+//         break // temp, handle pawn movements...
+//     case 2:
+//         const cleanedWords =
+//             ret = keyWords.map((foundPosition: FoundPositionType) => foundPosition.position).join('')
+//         break
+//     case 0:
+//         break
+// }
 
 ///////////////// LEGACY
 // export const computerMVPGuess = (rawResults: string[]): string => {

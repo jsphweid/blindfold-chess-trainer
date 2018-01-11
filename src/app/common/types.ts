@@ -20,9 +20,9 @@ export interface ReformulatedSpeechResultType {
     final: string[]
 }
 
-export interface KeyWordType {
+export interface KeyWordObjType {
     indexOfFirstLetter: number
-    position: PositionType
+    pieceOrPosition: SemiValidPieceOrPositionType
 }
 
 export interface ChessJSMoveDetailType {
@@ -34,6 +34,7 @@ export interface ChessJSMoveDetailType {
     san: string
 }
 
+export type SemiValidPieceOrPositionType = any // for now...
 export type ValidPieceOrPositionType = PositionType | 'rook' | 'knight' | 'bishop' | 'queen' | 'king' | 'pawn'
 
 // export type FoundPositionOrPieceType =
