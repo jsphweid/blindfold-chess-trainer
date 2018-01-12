@@ -9,3 +9,6 @@ MVP
 Phase 3: ai
 (Phase 4: peer to peer)
 
+ - pawn can't take a piece with shorthand
+ - 2r1k3/8/1PpQ4/5RpP/8/B5P1/P2PP2P/RN2K3 w Q - 6 31 rook can't take f8????
+
