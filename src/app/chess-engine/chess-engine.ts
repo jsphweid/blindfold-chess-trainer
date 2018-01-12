@@ -2,7 +2,7 @@ import { GameStateType, ChessJSMoveDetailType } from '../common/types'
 
 const ChessEngineLibrary = require('./chess-engine-library')
 
-const MOVE_OPTIONS = {
+export const MOVE_OPTIONS = {
     sloppy: true
 }
 

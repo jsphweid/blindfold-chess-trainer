@@ -15,6 +15,12 @@ export enum SpeechStateType {
     Inactive = ''
 }
 
+export enum ProcessingResponseStateType {
+    Incomprehensible = 'I\'m sorry, I couldn\'t understand that.',
+    Invalid = 'That is not a valid move.',
+    Successful = 'Success.'
+}
+
 export interface ReformulatedSpeechResultType {
     temps: string[]
     final: string[]
@@ -40,9 +46,19 @@ export type WhitePieceLetterType = 'R' | 'N' | 'B' | 'K' | 'Q' | 'P'
 export type BlackPieceLetterType = 'r' | 'n' | 'b' | 'k' | 'q' | 'p'
 export type PieceLetterType = WhitePieceLetterType | BlackPieceLetterType
 
-export interface MoveObjectType {
+export interface ProcessingResponseType {
+    responseType: ProcessingResponseStateType
+    refinedMove: RefinedMoveType
+}
+
+export interface RefinedMoveType {
     rawMove: string
     descriptiveMove: string
+}
+
+export interface MoveType {
+    from: ValidPieceOrPositionType
+    to: PositionType
 }
 
 export type SemiValidPieceOrPositionType = any // for now...
