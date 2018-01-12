@@ -15,14 +15,20 @@ export enum SpeechStateType {
     Inactive = ''
 }
 
+export enum ProcessingResponseStateType {
+    Incomprehensible = 'I\'m sorry, I couldn\'t understand that.',
+    Invalid = 'That is not a valid move.',
+    Successful = 'Success.'
+}
+
 export interface ReformulatedSpeechResultType {
     temps: string[]
     final: string[]
 }
 
-export interface FoundPositionType {
+export interface KeyWordObjType {
     indexOfFirstLetter: number
-    position: PositionType
+    pieceOrPosition: SemiValidPieceOrPositionType
 }
 
 export interface ChessJSMoveDetailType {
@@ -33,3 +39,29 @@ export interface ChessJSMoveDetailType {
     piece: string
     san: string
 }
+
+export type PieceType = 'rook' | 'knight' | 'bishop' | 'king' | 'queen' | 'pawn'
+
+export type WhitePieceLetterType = 'R' | 'N' | 'B' | 'K' | 'Q' | 'P'
+export type BlackPieceLetterType = 'r' | 'n' | 'b' | 'k' | 'q' | 'p'
+export type PieceLetterType = WhitePieceLetterType | BlackPieceLetterType
+
+export interface ProcessingResponseType {
+    responseType: ProcessingResponseStateType
+    refinedMove: RefinedMoveType
+}
+
+export interface RefinedMoveType {
+    rawMove: string
+    descriptiveMove: string
+}
+
+export interface MoveType {
+    from: ValidPieceOrPositionType
+    to: PositionType
+}
+
+export type SemiValidPieceOrPositionType = any // for now...
+export type ValidPieceOrPositionType = PositionType | 'rook' | 'knight' | 'bishop' | 'queen' | 'king' | 'pawn'
+
+// export type FoundPositionOrPieceType =

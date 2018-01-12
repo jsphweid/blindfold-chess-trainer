@@ -33,6 +33,8 @@
  * https://github.com/jhlywa/chess.js/blob/master/LICENSE
  */
 
+// modified by Joseph Weidinger 2018-01-12
+
 var Chess = function(fen) {
 
     /* jshint indent: false */
@@ -1662,8 +1664,4 @@ var Chess = function(fen) {
     };
 };
 
-/* export Chess object if using node or any other CommonJS compatible
- * environment */
-if (typeof exports !== 'undefined') exports.Chess = Chess;
-/* export Chess object for any RequireJS compatible environment */
-if (typeof define !== 'undefined') define( function () { return Chess;  });
+module.exports = Chess

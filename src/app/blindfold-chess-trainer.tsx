@@ -120,6 +120,7 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
                         resetWaitingToConfirm={this.handleResetWaitingToConfirm}
                         moveErrorMessage={this.state.moveErrorMessage}
                         blackMoveMessage={this.state.blackMoveMessage}
+                        gameState={this.chessEngine.getCurrentStateAsFen()}
                     />
                 </div>
                 <div className="bct-info">

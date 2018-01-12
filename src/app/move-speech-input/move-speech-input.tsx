@@ -1,6 +1,6 @@
 import * as React from 'react'
-import { reformulateSpeechEvents, computerMVPGuess, generateConfirmMessage } from '../common/helpers'
-import { SpeechStateType } from '../common/types'
+import { reformulateSpeechEvents, computerGuess, generateConfirmMessage } from '../common/helpers'
+import { ProcessingResponseStateType, ProcessingResponseType, SpeechStateType } from '../common/types'
 import InteractiveComputerModal from './interactive-computer-modal'
 const { Listening, Speaking, Thinking, Inactive } = SpeechStateType
 
@@ -9,6 +9,7 @@ export interface MoveSpeechInputProps {
     resetWaitingToConfirm: () => void
     moveErrorMessage: string
     blackMoveMessage: string
+    gameState: string
 }
 
 export interface MoveSpeechInputState {
@@ -90,12 +91,20 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
 
     processSpeechEvents = (): void => {
         const topResults: string[] = reformulateSpeechEvents(this.state.speechEvents).final
-        const easyGuess: string = computerMVPGuess(topResults)
-        if (easyGuess) {
-            this.props.handleMoveSubmit(easyGuess.toLowerCase())
-            this.setState({ speechState: Speaking, info: generateConfirmMessage(easyGuess), confirmingMove: easyGuess })
-        } else {
-            this.setState({ speechState: Speaking, info: `I'm sorry. I did not understand. Try again.` })
+        const guess: ProcessingResponseType = computerGuess(topResults, this.props.gameState)
+        const speechState: SpeechStateType = Speaking
+        switch (guess.responseType) {
+            default:
+            case ProcessingResponseStateType.Incomprehensible:
+                this.setState({ speechState, info: ProcessingResponseStateType.Incomprehensible })
+                break
+            case ProcessingResponseStateType.Invalid:
+                this.setState({ speechState, info: ProcessingResponseStateType.Invalid })
+                break
+            case ProcessingResponseStateType.Successful:
+                this.props.handleMoveSubmit(guess.refinedMove.rawMove)
+                this.setState({ speechState, info: guess.refinedMove.descriptiveMove, confirmingMove: guess.refinedMove.rawMove })
+                break
         }
     }
 
