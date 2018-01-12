@@ -9,6 +9,7 @@ export interface MoveSpeechInputProps {
     resetWaitingToConfirm: () => void
     moveErrorMessage: string
     blackMoveMessage: string
+    gameState: string
 }
 
 export interface MoveSpeechInputState {
@@ -90,7 +91,7 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
 
     processSpeechEvents = (): void => {
         const topResults: string[] = reformulateSpeechEvents(this.state.speechEvents).final
-        const easyGuess: string = computerMVPGuess(topResults)
+        const easyGuess: any = computerMVPGuess(topResults, this.props.gameState) // change
         if (easyGuess) {
             this.props.handleMoveSubmit(easyGuess.toLowerCase())
             this.setState({ speechState: Speaking, info: generateConfirmMessage(easyGuess), confirmingMove: easyGuess })

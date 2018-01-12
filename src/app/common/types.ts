@@ -34,6 +34,17 @@ export interface ChessJSMoveDetailType {
     san: string
 }
 
+export type PieceType = 'rook' | 'knight' | 'bishop' | 'king' | 'queen' | 'pawn'
+
+export type WhitePieceLetterType = 'R' | 'N' | 'B' | 'K' | 'Q' | 'P'
+export type BlackPieceLetterType = 'r' | 'n' | 'b' | 'k' | 'q' | 'p'
+export type PieceLetterType = WhitePieceLetterType | BlackPieceLetterType
+
+export interface MoveObjectType {
+    rawMove: string
+    descriptiveMove: string
+}
+
 export type SemiValidPieceOrPositionType = any // for now...
 export type ValidPieceOrPositionType = PositionType | 'rook' | 'knight' | 'bishop' | 'queen' | 'king' | 'pawn'
 

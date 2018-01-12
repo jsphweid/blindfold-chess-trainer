@@ -1,9 +1,10 @@
-import { NotationType, PositionType } from './generatedTypes'
+import { NotationType, PositionType, PieceType } from './generatedTypes'
 import {
     ReformulatedSpeechResultType, ChessJSMoveDetailType, KeyWordObjType,
-    ValidPieceOrPositionType, SemiValidPieceOrPositionType
+    ValidPieceOrPositionType, SemiValidPieceOrPositionType, MoveObjectType, PieceLetterType, WhitePieceLetterType, BlackPieceLetterType
 } from './types'
-import { semiValidPositionsAndPieces } from './constants'
+import { semiValidPositionsAndPieces, positions, pieces } from './constants'
+import { PieceLetterType } from './types'
 
 export const getCharAsNumber = (char: string): number => parseInt(char, 10)
 export const charIsNumber = (char: string): boolean => !!parseInt(char, 10)
@@ -63,20 +64,95 @@ const cleanAllKeyWords = (keyWords: SemiValidPieceOrPositionType[]): ValidPieceO
     })
 }
 
-export const computerMVPGuess = (rawResults: string[]): string => {
-    let ret: string = null
-    const possibleGuesses: SemiValidPieceOrPositionType[][] = []
-    rawResults.forEach((result: string) => {
-        const foundKeyWords = tryToFindKeyWords(result)
-        if (foundKeyWords.length === 1 || foundKeyWords.length === 2) {
-            possibleGuesses.push(foundKeyWords)
+const getPieceLetter = (piece: PieceType, color = 'white'): PieceLetterType => {
+    const pieceAbbrievMap: any = {
+        'rook': 'r',
+        'knight': 'n',
+        'queen': 'q',
+        'king': 'k',
+        'pawn': 'p',
+        'bishop': 'b'
+    }
+    const abbriev: string = pieceAbbrievMap[piece]
+    return (color === 'white')
+        ? abbriev.toUpperCase() as WhitePieceLetterType
+        : abbriev as BlackPieceLetterType
+}
+
+const isPiece = (possiblePiece: any): boolean => pieces.indexOf(possiblePiece) !== -1
+const isPosition = (possiblePosition: any): boolean => positions.indexOf(possiblePosition) !== -1
+
+export const addRowValues = (str: string): number => {
+    let sum: number = 0
+    for (const char of str) {
+        const intParsed = parseInt(char, 10)
+        if (intParsed)
+            sum += intParsed
+        else
+            sum ++
+    }
+    return sum
+}
+
+export const findAllSquaresPieceIsOn = (piece: PieceType, gameState: string): PositionType[] => {
+    const pieceLetter: PieceLetterType = getPieceLetter(piece)
+    const splitGameState: string[] = gameState.split(' ')[0].split('/')
+    const positions = [] as PositionType[]
+    splitGameState.forEach((row: string, rowNumber: number) => {
+        for (let i = 0; i < row.length; i++) {
+            if (pieceLetter === row[i]) {
+                const xPosition: string = 'abcdefgh'[addRowValues(row.slice(0, i))]
+                const yPosition: number = 8 - rowNumber
+                positions.push(`${xPosition}${yPosition}` as PositionType)
+            }
         }
     })
-    if (possibleGuesses.length === 0) {}
+    return positions.sort()
+}
+
+export const determineStartingSquare = (moves: ValidPieceOrPositionType[], gameState: string): PositionType => {
+    if (isPosition(moves[0]))
+        return moves[0] as PositionType
+
+}
+
+export const getRawMove = (moves: ValidPieceOrPositionType[], gameState: string): ValidPieceOrPositionType[] => {
+    // just confirm the move.... let the validation engine to do rest....
+    if (moves.length === 1) return moves
+
+    // if it is in positions, just pass it through and another function will assume it's a pawn
+    moves.map((move: ValidPieceOrPositionType) => {})
+
+
+    // if (moves.length === 1) {
+    //     // unshift pawn, not text, the actual position
+    //     const desiredSquare: PositionType = moves[0]
+    // }
+    // if length 1, then assume pawn
     return 'test'
 }
 
-// write tests around this above....
+export const computerMVPGuess = (rawResults: string[], gameState: string): MoveObjectType => {
+    const bestGuess: SemiValidPieceOrPositionType[] = rawResults
+        .map((result: string) => tryToFindKeyWords(result))
+        .filter((semiValidPositions: SemiValidPieceOrPositionType[]) => semiValidPositions.length === 1 || semiValidPositions.length === 2)
+        .sort((a, b) => b.length - a.length)
+        [0]
+
+    if (!bestGuess)
+        return { rawMove: '', descriptiveMove: '' }
+
+    const bestGuessCleaned: ValidPieceOrPositionType[] = cleanAllKeyWords(bestGuess)
+    // change to raw positions using game state => raw move
+    const validPiecesAndPositions: ValidPieceOrPositionType = getRawMove(bestGuessCleaned, gameState)
+    // if 
+    
+    // get descriptive moves by using game state
+
+    return 
+}
+
+// write tests around `this above....
 
 // switch (keyWords.length) {
 //     default:
