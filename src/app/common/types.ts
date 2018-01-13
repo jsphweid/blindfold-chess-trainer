@@ -26,11 +26,6 @@ export interface ReformulatedSpeechResultType {
     final: string[]
 }
 
-export interface KeyWordObjType {
-    indexOfFirstLetter: number
-    pieceOrPosition: SemiValidPieceOrPositionType
-}
-
 export interface ChessJSMoveDetailType {
     color: string
     from: string
@@ -40,7 +35,17 @@ export interface ChessJSMoveDetailType {
     san: string
 }
 
+export interface ObjectWithPiecesAndCloseMatchesType {
+    rook: string[]
+    knight: string[]
+    bishop: string[]
+    king: string[]
+    queen: string[]
+    pawn: string[]
+}
+
 export type PieceType = 'rook' | 'knight' | 'bishop' | 'king' | 'queen' | 'pawn'
+export type ColorType = 'black' | 'white'
 
 export type WhitePieceLetterType = 'R' | 'N' | 'B' | 'K' | 'Q' | 'P'
 export type BlackPieceLetterType = 'r' | 'n' | 'b' | 'k' | 'q' | 'p'
@@ -63,5 +68,3 @@ export interface MoveType {
 
 export type SemiValidPieceOrPositionType = any // for now...
 export type ValidPieceOrPositionType = PositionType | 'rook' | 'knight' | 'bishop' | 'queen' | 'king' | 'pawn'
-
-// export type FoundPositionOrPieceType =

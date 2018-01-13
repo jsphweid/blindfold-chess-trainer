@@ -1,7 +1,7 @@
 import * as React from 'react'
-import { reformulateSpeechEvents, computerGuess, generateConfirmMessage } from '../common/helpers'
 import { ProcessingResponseStateType, ProcessingResponseType, SpeechStateType } from '../common/types'
 import InteractiveComputerModal from './interactive-computer-modal'
+import SpeechProcessor from './speech-processor'
 const { Listening, Speaking, Thinking, Inactive } = SpeechStateType
 
 export interface MoveSpeechInputProps {
@@ -90,8 +90,9 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
     }
 
     processSpeechEvents = (): void => {
-        const topResults: string[] = reformulateSpeechEvents(this.state.speechEvents).final
-        const guess: ProcessingResponseType = computerGuess(topResults, this.props.gameState)
+        const topResults: string[] = SpeechProcessor.reformulateSpeechEvents(this.state.speechEvents).final
+        const speechProcessor: SpeechProcessor = new SpeechProcessor(this.props.gameState)
+        const guess: ProcessingResponseType = speechProcessor.computerGuess(topResults)
         const speechState: SpeechStateType = Speaking
         switch (guess.responseType) {
             default:
