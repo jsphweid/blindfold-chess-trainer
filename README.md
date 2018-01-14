@@ -5,8 +5,11 @@ MVP
 ~~- computer uses random moves (no AI) with text commands~~
 
 ~~Phase 1: text commands~~
+
 ~~Phase 2: voice commands~~
+
 Phase 3: ai
+
 (Phase 4: peer to peer)
 
 TODO:
@@ -15,6 +18,4 @@ TODO:
  - get as far as possible with UI before someone else can add to it
   - 'play random game' and "load from fen" and "hide board" should be under 'advanced'
   - simplify -> input box or hit spacebar
-
-
- - fen as url param (then people can just copy / paste
+  
