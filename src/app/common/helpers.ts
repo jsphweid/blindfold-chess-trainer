@@ -59,7 +59,3 @@ export const getPieceFromLetter = (letter: PieceLetterType): PieceType => {
 
 export const isPiece = (possiblePiece: any): boolean => pieces.indexOf(possiblePiece) !== -1
 export const isPosition = (possiblePosition: any): boolean => positions.indexOf(possiblePosition) !== -1
-
-export const generateBlackMoveMessage = (moveDetail: ChessJSMoveDetailType): string => {
-    return `Black moves from ${moveDetail.from} to ${moveDetail.to}.`
-}

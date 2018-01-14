@@ -2,12 +2,13 @@ import * as React from 'react'
 import * as Chessboard from 'react-chess'
 import { NotationType } from './common/generatedTypes'
 import ChessEngine from './chess-engine/chess-engine'
-import { getReactChessStateFromFen, generateBlackMoveMessage } from './common/helpers'
-import { GameStateType, ChessJSMoveDetailType } from './common/types'
+import { getReactChessStateFromFen } from './common/helpers'
+import { GameStateType, MoveType } from './common/types'
 import EndingOverlay from './ending-overlay/ending-overlay'
 import FenSection from './fen-section/fen-section'
 import MoveInput from './move-input/move-input'
 import MoveSpeechInput from './move-speech-input/move-speech-input'
+import ChessPlayground from './chess-engine/chess-playground'
 
 export interface BlindfoldChessTrainerProps {
 }
@@ -50,8 +51,10 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
             setTimeout(() => {
                 const moves: string[] = this.chessEngine.getAllPossibleMoves()
                 const move: string = moves[Math.floor(Math.random() * moves.length)]
-                const moveDetails: ChessJSMoveDetailType = this.chessEngine.move(move)
-                const blackMoveMessage = generateBlackMoveMessage(moveDetails)
+                const fenBeforeMove: string = this.chessEngine.getCurrentStateAsFen()
+                const { from, to } = this.chessEngine.move(move)
+                const playground = new ChessPlayground()
+                const blackMoveMessage = `black ${playground.getDescriptiveMove({ from, to } as MoveType, fenBeforeMove)}`
                 this.syncGameState()
                 this.setState({ blackMoveMessage, computerThinkingAboutNextMove: false })
             }, 1000)
