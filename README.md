@@ -15,6 +15,7 @@ Phase 3: ai
 TODO:
  - when piece goes to other side, figure out how to revive older pieces
  - ending game should do something more special
+ - should refocus on hit enter...
  - get as far as possible with UI before someone else can add to it
   - 'play random game' and "load from fen" and "hide board" should be under 'advanced'
   - simplify -> input box or hit spacebar
