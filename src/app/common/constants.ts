@@ -16,3 +16,5 @@ export const pieces = Object.keys(objWithPiecesAndCloseMatches) as PieceType[]
 
 export const kingSideCastleMoveStr: string = 'O-O'
 export const queenSideCastleMoveStr: string = 'O-O-O'
+
+export const defaultFenChessState: string = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
