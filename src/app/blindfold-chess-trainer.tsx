@@ -9,6 +9,8 @@ import FenSection from './fen-section/fen-section'
 import MoveInput from './move-input/move-input'
 import MoveSpeechInput from './move-speech-input/move-speech-input'
 import ChessPlayground from './chess-engine/chess-playground'
+import * as queryString from 'query-string'
+import { defaultFenChessState } from './common/constants'
 
 export interface BlindfoldChessTrainerProps {
 }
@@ -39,9 +41,23 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
         }
     }
 
+    componentDidMount() {
+        const params = queryString.parse(location.search)
+        if (params.fen)
+            this.handleLoadGameFromFen(params.fen)
+    }
+
+    updateFenSearchParam = (fen: string): void => {
+        const searchParamObject = {
+            ...queryString.parse(location.search),
+            fen
+        }
+        history.pushState({}, null, `?${queryString.stringify(searchParamObject)}`)
+    }
 
     syncGameState = (): void => {
         const currentStateAsFen: string = this.chessEngine.getCurrentStateAsFen()
+        this.updateFenSearchParam(currentStateAsFen)
         this.setState({ allPositionsAsNotations: getReactChessStateFromFen(currentStateAsFen) })
     }
 
@@ -117,6 +133,7 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
             <div className="bct">
                 <div className="bct-chessboard">
                     <button onClick={this.playRandomGame}>Play Random Game</button>
+                    <button onClick={() => this.handleLoadGameFromFen(defaultFenChessState)}>Reset Game</button>
                     <Chessboard allowMoves={false} pieces={this.state.allPositionsAsNotations} />
                     <MoveSpeechInput
                         handleMoveSubmit={this.handleEnter}
