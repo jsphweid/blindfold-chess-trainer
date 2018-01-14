@@ -9,9 +9,12 @@ MVP
 Phase 3: ai
 (Phase 4: peer to peer)
 
-problems
- - pawn can't take a piece with shorthand
- - 2r1k3/8/1PpQ4/5RpP/8/B5P1/P2PP2P/RN2K3 w Q - 6 31 rook can't take f8????
- - rook hard to pronounce
+TODO:
+ - when piece goes to other side, figure out how to revive older pieces
+ - ending game should do something more special
+ - get as far as possible with UI before someone else can add to it
+  - 'play random game' and "load from fen" and "hide board" should be under 'advanced'
+  - simplify -> input box or hit spacebar
+
 
  - fen as url param (then people can just copy / paste
