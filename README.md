@@ -17,6 +17,6 @@ TODO:
  - ending game should do something more special
  - should refocus on hit enter...
  - get as far as possible with UI before someone else can add to it
-  - 'play random game' and "load from fen" and "hide board" should be under 'advanced'
+  - 'play random game' and "load from fen" and "hide board" and 'show possible moves' should be under 'advanced'
   - simplify -> input box or hit spacebar
   
