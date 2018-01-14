@@ -13,6 +13,18 @@ describe('SpeechProcessor', () => {
         speechProcessor = null
     })
 
+    describe('determineIfCastlingMove', () => {
+
+        it('should be a castling move if it contains the text: castle', () => {
+            expect(SpeechProcessor.determineIfCastlingMove(['queen side cAStlE', 'queen-side CASTLE'])).toBe(true)
+        })
+
+        it('should NOT be a castling move if it doesnt contain the castle', () => {
+            expect(SpeechProcessor.determineIfCastlingMove(['queen side notcastle', 'queen-side nope'])).toBe(false)
+        })
+
+    })
+
     describe('getKeywords', () => {
 
         it('should find the correct positions in a string with basic positions', () => {
@@ -186,6 +198,44 @@ describe('SpeechProcessor', () => {
 
         it('should come up with incomprehensible when it cant make sense out of any of the results', () => {
             const rawResults = ['random stuff', 'bishop takes nothing!', 'h20', 'a-3 goes to a-4', 'more random stuff with ending']
+            const expectedResults: ProcessingResponseType = {
+                responseType: ProcessingResponseStateType.Incomprehensible,
+                refinedMove: null
+            }
+            expect(speechProcessor.computerGuess(rawResults)).toEqual(expectedResults)
+        })
+
+        it('should come up with king side castle', () => {
+            speechProcessor = new SpeechProcessor('rnb1kbnr/2q1pppp/p7/1ppp4/1P3PP1/5N1B/P1PPP2P/RNBQK2R w KQkq b6 0 6')
+            const rawResults = ['random stuff', 'king side castle', 'h20', 'a-3 goes to a-4', 'more random stuff with ending']
+            const expectedResults: ProcessingResponseType = {
+                responseType: ProcessingResponseStateType.Successful,
+                refinedMove: { descriptiveMove: 'king side castle?', rawMove: 'O-O' }
+            }
+            expect(speechProcessor.computerGuess(rawResults)).toEqual(expectedResults)
+        })
+
+        it('should come up with queen side castle', () => {
+            speechProcessor = new SpeechProcessor('rnbqkb2/p1pppp1r/5n1p/1p4B1/1P1P4/N7/P1PQPPPP/R3KBNR w KQq b6 0 6')
+            const rawResults = ['random stuff', 'queen side CasTLE', 'h20', 'a-3 goes to a-4', 'more random stuff with ending']
+            const expectedResults: ProcessingResponseType = {
+                responseType: ProcessingResponseStateType.Successful,
+                refinedMove: { descriptiveMove: 'queen side castle?', rawMove: 'O-O-O' }
+            }
+            expect(speechProcessor.computerGuess(rawResults)).toEqual(expectedResults)
+        })
+
+        it('should come up with invalid move if queen side castle but cant any more', () => {
+            const rawResults = ['random stuff', 'queen side castle', 'h20', 'a-3 goes to a-4', 'more random stuff with ending']
+            const expectedResults: ProcessingResponseType = {
+                responseType: ProcessingResponseStateType.Invalid,
+                refinedMove: null
+            }
+            expect(speechProcessor.computerGuess(rawResults)).toEqual(expectedResults)
+        })
+
+        it('should come up with incomprehensible if castling but no more specific info', () => {
+            const rawResults = ['random stuff', 'castle maybe', 'h20', 'a-3 goes to a-4', 'more random stuff with ending']
             const expectedResults: ProcessingResponseType = {
                 responseType: ProcessingResponseStateType.Incomprehensible,
                 refinedMove: null

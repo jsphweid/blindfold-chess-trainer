@@ -4,7 +4,10 @@ import {
 } from '../common/types'
 import ChessPlayground from '../chess-engine/chess-playground'
 import { PositionType } from '../common/generatedTypes'
-import { objWithPiecesAndCloseMatches, pieces } from '../common/constants'
+import {
+    kingSideCastleMoveStr, objWithPiecesAndCloseMatches, pieces,
+    queenSideCastleMoveStr
+} from '../common/constants'
 import { getPieceLetter, isPiece, isPosition } from '../common/helpers'
 
 export default class SpeechProcessor {
@@ -15,6 +18,10 @@ export default class SpeechProcessor {
     constructor(fen: string) {
         this.fen = fen
         this.playground = new ChessPlayground()
+    }
+
+    static determineIfCastlingMove(guesses: string[]): boolean {
+        return guesses.join(' ').split(' ').some((guess) => guess.toLowerCase() === 'castle')
     }
 
     static reformulateSpeechEvents(results: SpeechRecognitionResult[]): ReformulatedSpeechResultType {
@@ -95,7 +102,35 @@ export default class SpeechProcessor {
         return startingSquare ? { from: startingSquare, to: move.to } : null
     }
 
+    handleCastlingMove(rawResults: string[]): ProcessingResponseType {
+        const queen = rawResults.join(' ').split(' ').some((guess) => guess.toLowerCase() === 'queen')
+        const king = rawResults.join(' ').split(' ').some((guess) => guess.toLowerCase() === 'king')
+
+        if ((queen && king) || (!queen && !king))
+            return { responseType: ProcessingResponseStateType.Incomprehensible, refinedMove: null }
+
+        if (king && this.playground.moveIsValid(kingSideCastleMoveStr, this.fen)) {
+            return {
+                responseType: ProcessingResponseStateType.Successful,
+                refinedMove: { descriptiveMove: 'king side castle?', rawMove: kingSideCastleMoveStr }
+            }
+        }
+
+        if (queen && this.playground.moveIsValid(queenSideCastleMoveStr, this.fen)) {
+            return {
+                responseType: ProcessingResponseStateType.Successful,
+                refinedMove: { descriptiveMove: 'queen side castle?', rawMove: queenSideCastleMoveStr }
+            }
+        }
+
+        return { responseType: ProcessingResponseStateType.Invalid, refinedMove: null }
+
+    }
+
     computerGuess(rawResults: string[]): ProcessingResponseType {
+        const isCastlingMove: boolean = SpeechProcessor.determineIfCastlingMove(rawResults)
+        if (isCastlingMove) return this.handleCastlingMove(rawResults)
+
         const bestGuess: SemiValidPieceOrPositionType[] = rawResults
             .map((result: string) => SpeechProcessor.getKeywords(result))
             .filter((semiValidPositions: SemiValidPieceOrPositionType[]) => semiValidPositions.length > 0)

@@ -155,7 +155,7 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
         if (this.props.moveErrorMessage) {
             this.setState({ info: this.props.moveErrorMessage, confirmingMove: null })
         } else {
-            this.props.handleMoveSubmit(confirmingMove.toLowerCase())
+            this.props.handleMoveSubmit(confirmingMove)
             this.handleReset()
         }
     }

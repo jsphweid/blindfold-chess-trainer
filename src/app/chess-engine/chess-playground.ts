@@ -57,4 +57,9 @@ export default class ChessPlayground {
             : `${descriptiveFrom} moves to ${rawMove.to}?`
     }
 
+    moveIsValid(moveStr: string, gameState: string): boolean {
+        this.chessEngine.load(gameState)
+        return this.chessEngine.move(moveStr)
+    }
+
 }
