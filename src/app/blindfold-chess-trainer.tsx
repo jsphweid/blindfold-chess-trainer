@@ -45,6 +45,8 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
         const params = queryString.parse(location.search)
         if (params.fen)
             this.handleLoadGameFromFen(params.fen)
+        else
+            this.updateFenSearchParam(defaultFenChessState)
     }
 
     updateFenSearchParam = (fen: string): void => {
