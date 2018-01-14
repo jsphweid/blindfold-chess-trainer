@@ -76,13 +76,13 @@ export default class SpeechProcessor {
 
         const matchingSquares = this.findAllSquaresPieceIsOn(move.from as PieceType)
 
-        switch (matchingSquares.length) {
+        switch (true) {
             default:
-            case 0:
+            case matchingSquares.length === 0:
                 return null
-            case 1:
+            case matchingSquares.length === 1:
                 return matchingSquares[0]
-            case 2:
+            case matchingSquares.length >= 2:
                 return this.playground.determineWhichSquareIsValidMove(matchingSquares, move.to as PositionType, this.fen) // assumes second one is position
         }
     }

@@ -103,6 +103,11 @@ describe('SpeechProcessor', () => {
             expect(speechProcessor.determineStartingSquare({ from: 'bishop', to: 'h8' })).toBe(null)
         })
 
+        it('should determine proper starting square when many pawns to choose from and pawn is attacking', () => {
+            speechProcessor = new SpeechProcessor('r1bqk1nr/pppppp1p/n5pb/5P2/3P4/8/PPP1P1PP/RNBQKBNR w KQkq - 1 4')
+            expect(speechProcessor.determineStartingSquare({ from: 'pawn', to: 'g6' })).toBe('f5')
+        })
+
     })
 
     describe('findAllSquaresPieceIsOn', () => {
