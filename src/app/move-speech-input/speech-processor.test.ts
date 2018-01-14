@@ -25,6 +25,18 @@ describe('SpeechProcessor', () => {
 
     })
 
+    describe('determineIfPawnPromoting', () => {
+
+        it('should be a promotion if includes promo', () => {
+            expect(SpeechProcessor.determineIfCastlingMove(['queen side cAStlE', 'queen-side CASTLE', 'pawn promotes to something'])).toBe(true)
+        })
+
+        it('should NOT be a promotion move if it doesnt contain the promo', () => {
+            expect(SpeechProcessor.determineIfCastlingMove(['queen side notcastle', 'queen-side nope'])).toBe(false)
+        })
+
+    })
+
     describe('getKeywords', () => {
 
         it('should find the correct positions in a string with basic positions', () => {
@@ -239,6 +251,73 @@ describe('SpeechProcessor', () => {
             const expectedResults: ProcessingResponseType = {
                 responseType: ProcessingResponseStateType.Incomprehensible,
                 refinedMove: null
+            }
+            expect(speechProcessor.computerGuess(rawResults)).toEqual(expectedResults)
+        })
+
+        it('should come up with incomprehensible if promoting but no more specific info', () => {
+            const rawResults = ['random stuff', 'promote', 'h20', 'a-3 goes to a-4', 'more random stuff with ending']
+            const expectedResults: ProcessingResponseType = {
+                responseType: ProcessingResponseStateType.Incomprehensible,
+                refinedMove: null
+            }
+            expect(speechProcessor.computerGuess(rawResults)).toEqual(expectedResults)
+        })
+
+        it('should come up with invalid if trying to promote a valid pawn to a valid piece but on invalid board', () => {
+            const rawResults = ['random stuff', 'promote pawn at f2 to king', 'h20', 'a-3 goes to a-4', 'more random stuff with ending']
+            const expectedResults: ProcessingResponseType = {
+                responseType: ProcessingResponseStateType.Incomprehensible,
+                refinedMove: null
+            }
+            expect(speechProcessor.computerGuess(rawResults)).toEqual(expectedResults)
+        })
+
+        it('should come up with invalid if trying to promote a valid pawn to a valid piece but on invalid board', () => {
+            const rawResults = ['random stuff', 'promote pawn at b3 to king', 'h20', 'a-3 goes to a-4', 'more random stuff with ending']
+            const expectedResults: ProcessingResponseType = {
+                responseType: ProcessingResponseStateType.Incomprehensible,
+                refinedMove: null
+            }
+            expect(speechProcessor.computerGuess(rawResults)).toEqual(expectedResults)
+        })
+
+        it('should come up with success if trying to promote to queen and it is the only pawn', () => {
+            speechProcessor = new SpeechProcessor('2Bk4/P2r2p1/2p2p2/8/4b1P1/3PB3/1P2KP2/2b5 w - - 1 32')
+            const rawResults = ['random stuff', 'pawn promotes to queen', 'h20', 'a-3 goes to a-4', 'more random stuff with ending']
+            const expectedResults: ProcessingResponseType = {
+                responseType: ProcessingResponseStateType.Successful,
+                refinedMove: { descriptiveMove: 'pawn promotes to queen at a8?', rawMove: 'a8=Q' }
+            }
+            expect(speechProcessor.computerGuess(rawResults)).toEqual(expectedResults)
+        })
+
+        it('should come up with success if trying to promote to rook and it is the only pawn and is taking over a piece in process', () => {
+            speechProcessor = new SpeechProcessor('1rBk4/P5p1/2p2p2/8/4b1P1/3PB3/1P2KP2/2b5 w - - 1 32')
+            const rawResults = ['random stuff', 'pawn takes rook at a8 and promotes to rook', 'h20', 'a-3 goes to a-4', 'more random stuff with ending']
+            const expectedResults: ProcessingResponseType = {
+                responseType: ProcessingResponseStateType.Successful,
+                refinedMove: { descriptiveMove: 'pawn takes rook at a8 and promotes to rook at a8?', rawMove: 'a7b8=R' }
+            }
+            expect(speechProcessor.computerGuess(rawResults)).toEqual(expectedResults)
+        })
+
+        it('should come up with success if trying to promote to bishop at h8 when there are two possibilities and one must be specified', () => {
+            speechProcessor = new SpeechProcessor('1rBk3r/P5P1/2p2p2/8/4b1P1/3PB3/1P2KP2/2b5 w - - 1 32')
+            const rawResults = ['random stuff', 'pawn takes rook at h8 and promotes to bishop', 'h20', 'a-3 goes to a-4', 'more random stuff with ending']
+            const expectedResults: ProcessingResponseType = {
+                responseType: ProcessingResponseStateType.Successful,
+                refinedMove: { descriptiveMove: 'pawn takes rook at h8 and promotes to bishop at h8?', rawMove: 'g7h8=B' }
+            }
+            expect(speechProcessor.computerGuess(rawResults)).toEqual(expectedResults)
+        })
+
+        it('should come up with success if trying to promote to bishop at g8 when there are two possibilities and one must be specified', () => {
+            speechProcessor = new SpeechProcessor('1rBk3r/P5P1/2p2p2/8/4b1P1/3PB3/1P2KP2/2b5 w - - 1 32')
+            const rawResults = ['random stuff', 'pawn promotes to bishop at g8', 'h20', 'a-3 goes to a-4', 'more random stuff with ending']
+            const expectedResults: ProcessingResponseType = {
+                responseType: ProcessingResponseStateType.Successful,
+                refinedMove: { descriptiveMove: 'pawn promotes to bishop at g8?', rawMove: 'g8=B' }
             }
             expect(speechProcessor.computerGuess(rawResults)).toEqual(expectedResults)
         })

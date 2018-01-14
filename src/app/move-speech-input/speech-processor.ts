@@ -24,6 +24,10 @@ export default class SpeechProcessor {
         return guesses.join(' ').split(' ').some((guess) => guess.toLowerCase() === 'castle')
     }
 
+    static determineIfPawnPromoting(guesses: string[]): boolean {
+        return guesses.join(' ').split(' ').some((guess) => guess.includes('promo'))
+    }
+
     static reformulateSpeechEvents(results: SpeechRecognitionResult[]): ReformulatedSpeechResultType {
         const reformulated: ReformulatedSpeechResultType = { final: [], temps: [] }
         results.forEach((result: SpeechRecognitionResult) => {
@@ -124,12 +128,18 @@ export default class SpeechProcessor {
         }
 
         return { responseType: ProcessingResponseStateType.Invalid, refinedMove: null }
+    }
+
+    handlePawnPromotion(rawResults: string[]): ProcessingResponseType {
 
     }
 
     computerGuess(rawResults: string[]): ProcessingResponseType {
-        const isCastlingMove: boolean = SpeechProcessor.determineIfCastlingMove(rawResults)
-        if (isCastlingMove) return this.handleCastlingMove(rawResults)
+        if (SpeechProcessor.determineIfCastlingMove(rawResults))
+            return this.handleCastlingMove(rawResults)
+        
+        if (SpeechProcessor.determineIfPawnPromoting(rawResults))
+            return this.handlePawnPromotion(rawResults)
 
         const bestGuess: SemiValidPieceOrPositionType[] = rawResults
             .map((result: string) => SpeechProcessor.getKeywords(result))
