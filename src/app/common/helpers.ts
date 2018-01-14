@@ -1,6 +1,6 @@
 import { NotationType } from './generatedTypes'
 import { ChessJSMoveDetailType, PieceLetterType, WhitePieceLetterType, BlackPieceLetterType, PieceType, ColorType } from './types'
-import { positions, pieces } from './constants'
+import { positions, pieces, objWithPiecesAndCloseMatches } from './constants'
 
 export const getCharAsNumber = (char: string): number => parseInt(char, 10)
 export const charIsNumber = (char: string): boolean => !!parseInt(char, 10)
@@ -59,3 +59,7 @@ export const getPieceFromLetter = (letter: PieceLetterType): PieceType => {
 
 export const isPiece = (possiblePiece: any): boolean => pieces.indexOf(possiblePiece) !== -1
 export const isPosition = (possiblePosition: any): boolean => positions.indexOf(possiblePosition) !== -1
+export const findPieceLoosely = (token: string): PieceType => (
+    pieces.filter((piece: PieceType) => objWithPiecesAndCloseMatches[piece].includes(token))[0]
+)
+

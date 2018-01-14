@@ -8,7 +8,7 @@ import {
     kingSideCastleMoveStr, objWithPiecesAndCloseMatches, pieces,
     queenSideCastleMoveStr
 } from '../common/constants'
-import { getPieceLetter, isPiece, isPosition } from '../common/helpers'
+import { getPieceLetter, isPiece, isPosition, findPieceLoosely } from '../common/helpers'
 
 export default class SpeechProcessor {
 
@@ -44,10 +44,7 @@ export default class SpeechProcessor {
         const tokenizedResults: string[] = str.toLowerCase().split(' ')
 
         return tokenizedResults
-            .map((token: string) => {
-                if (isPosition(token)) return token
-                return pieces.filter((piece: PieceType) => objWithPiecesAndCloseMatches[piece].includes(token))[0]
-            })
+            .map((token: string) => (isPosition(token)) ? token : findPieceLoosely(token))
             .filter(Boolean)
             .filter((item, i, arr) => i === 0 || i === (arr.length - 1)) as ValidPieceOrPositionType[]
     }
@@ -131,7 +128,8 @@ export default class SpeechProcessor {
     }
 
     handlePawnPromotion(rawResults: string[]): ProcessingResponseType {
-
+        // definitely needs a promote to piece that is not a pawn
+        // if it doesn't have square it can try to assume it
     }
 
     computerGuess(rawResults: string[]): ProcessingResponseType {
