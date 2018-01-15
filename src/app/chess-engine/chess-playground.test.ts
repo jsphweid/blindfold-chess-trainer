@@ -77,4 +77,30 @@ describe('ChessPlayground', () => {
 
     })
 
+    describe('getWhichPawnCanCastleThere', () => {
+
+        const fen: string = '1rBk3r/P5P1/2p2p2/8/4b1P1/3PB3/1P2KP2/2b5 w - - 1 32'
+
+        it('should choose a7 pawn', () => {
+            expect(chessPlayground.getWhichPawnCanCastleThere(['a7', 'g7'], 'a8', fen)).toBe('a7')
+        })
+
+        it('should choose a7 pawn', () => {
+            expect(chessPlayground.getWhichPawnCanCastleThere(['a7', 'g7'], 'b8', fen)).toBe('a7')
+        })
+
+        it('should choose g7 pawn', () => {
+            expect(chessPlayground.getWhichPawnCanCastleThere(['a7', 'g7'], 'g8', fen)).toBe('g7')
+        })
+
+        it('should choose g7 pawn', () => {
+            expect(chessPlayground.getWhichPawnCanCastleThere(['a7', 'g7'], 'h8', fen)).toBe('g7')
+        })
+
+        it('should return null since no pawn can castle here', () => {
+            expect(chessPlayground.getWhichPawnCanCastleThere(['a7', 'g7'], 'e8', fen)).toBe(null)
+        })
+
+    })
+
 })

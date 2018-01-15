@@ -104,8 +104,9 @@ export default class SpeechProcessor {
     }
 
     handleCastlingMove(rawResults: string[]): ProcessingResponseType {
-        const queen = rawResults.join(' ').split(' ').some((guess) => guess.toLowerCase() === 'queen')
-        const king = rawResults.join(' ').split(' ').some((guess) => guess.toLowerCase() === 'king')
+        const flattenedResults: string[] = rawResults.join(' ').split(' ')
+        const queen = flattenedResults.some((guess) => guess.toLowerCase() === 'queen')
+        const king = flattenedResults.some((guess) => guess.toLowerCase() === 'king')
 
         if ((queen && king) || (!queen && !king))
             return { responseType: ProcessingResponseStateType.Incomprehensible, refinedMove: null }
@@ -128,8 +129,36 @@ export default class SpeechProcessor {
     }
 
     handlePawnPromotion(rawResults: string[]): ProcessingResponseType {
-        // definitely needs a promote to piece that is not a pawn
-        // if it doesn't have square it can try to assume it
+        const flattenedResults: string[] = rawResults.join(' ').split(' ')
+        const promoteToPiece: PieceType = flattenedResults
+            .map((token: string) => findPieceLoosely(token))
+            .filter((token: string) => !objWithPiecesAndCloseMatches['pawn'].includes(token))
+            .filter(Boolean)
+            .filter((item, i, arr) => i === arr.length - 1)[0]
+
+        if (!promoteToPiece)
+            return { responseType: ProcessingResponseStateType.Incomprehensible, refinedMove: null }
+        const pawnsOnSeven: PositionType[] = this.findAllSquaresPieceIsOn('pawn')
+            .filter((square: PositionType) => square[1] === '7')
+
+        const toPosition: PositionType = flattenedResults
+                .filter((token: string) => isPosition(token))[0] as PositionType
+                ||
+                `${pawnsOnSeven[0][0]}8` as PositionType
+
+        const fromPosition = this.playground.getWhichPawnCanCastleThere(pawnsOnSeven, toPosition, this.fen)
+
+        if (!toPosition || !fromPosition || !pawnsOnSeven)
+            return { responseType: ProcessingResponseStateType.Invalid, refinedMove: null }
+
+        return {
+            responseType: ProcessingResponseStateType.Successful,
+            refinedMove: {
+                descriptiveMove: `pawn promotes to ${promoteToPiece} at ${toPosition}?`,
+                rawMove: `${fromPosition}${toPosition}=${getPieceLetter(promoteToPiece)}`
+            }
+        }
+
     }
 
     computerGuess(rawResults: string[]): ProcessingResponseType {
