@@ -3,32 +3,28 @@
     margin: 0 auto;
 }
 
-.bct-chessboard {
-    max-width: 600px;
-    margin: 0 auto;
+.bct-main {
+    width: 100%;
+
+    .bct-main-chessboard {
+        width: 100%;
+    }
+    
 }
 
 .bct-info {
     @extend .bct-cheapBoxDiv;
-
-    .bct-info-input-or {
-        display: block;
-        text-align: center;
-    }
 }
 
 @media screen and (min-width: 600px) {
-    .bct-info-input {
-        display: flex;
+    .bct-main {
+        display: inline-flex;
 
-        .bct-info-input-or {
-            min-width: 48px;
-            margin: 200px 16px;
-            top: 50%;
+        div:last-child {
+            width: 300px;
         }
     }
 }
-
 
 // globals
 
@@ -39,7 +35,7 @@
 }
 
 .bct-cheapBoxDiv {
-    margin: 16px 0;
+    margin: 16px 16px;
     padding: 16px;
     border: 1px solid black;
 }

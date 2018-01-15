@@ -23,6 +23,7 @@ export interface BlindfoldChessTrainerState {
     resetMoveInput: boolean
     blackMoveMessage: string
     boardShowing: boolean
+    isSpeechInput: boolean
 }
 
 export default class BlindfoldChessTrainer extends React.Component<BlindfoldChessTrainerProps, BlindfoldChessTrainerState> {
@@ -39,7 +40,8 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
             blackMoveMessage: '',
             computerThinkingAboutNextMove: false,
             resetMoveInput: false,
-            boardShowing: true
+            boardShowing: true,
+            isSpeechInput: true
         }
     }
 
@@ -93,8 +95,8 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
         }, 10)
     }
 
-    handleEnter = (move: string): void => {
-        if (this.state.waitingToConfirmMove) {
+    handleEnter = (move: string, shouldConfirm: boolean = true): void => {
+        if (this.state.waitingToConfirmMove || !shouldConfirm) {
             const result = this.chessEngine.move(move)
             const moveErrorMessage: string = result ? '' : 'Failed to move piece.'
             this.setState({ moveErrorMessage, waitingToConfirmMove: false })
@@ -121,6 +123,28 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
 
     handleResetWaitingToConfirm = (): void => this.setState({ waitingToConfirmMove: false })
 
+    renderInputComponent = (): JSX.Element => {
+        return this.state.isSpeechInput
+            ? (
+                <MoveSpeechInput
+                    handleMoveSubmit={this.handleEnter}
+                    resetWaitingToConfirm={this.handleResetWaitingToConfirm}
+                    moveErrorMessage={this.state.moveErrorMessage}
+                    blackMoveMessage={this.state.blackMoveMessage}
+                    gameState={this.chessEngine.getCurrentStateAsFen()}
+                    handleToggleSpeechInput={() => this.setState({ isSpeechInput: !this.state.isSpeechInput })}
+                />
+            ) : (
+                <MoveInput
+                    handleEnter={this.handleEnter}
+                    resetMoveInput={this.state.resetMoveInput}
+                    resetMoveInputComplete={() => this.setState({ resetMoveInput: false })}
+                    moveErrorMessage={this.state.moveErrorMessage}
+                    handleToggleSpeechInput={() => this.setState({ isSpeechInput: !this.state.isSpeechInput })}
+                />
+            )
+    }
+
     renderWhoseTurn = (): JSX.Element => {
         return (
             <div>
@@ -138,25 +162,28 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
 
         return (
             <div className="bct">
-                <div className="bct-info">
-                    {this.renderWhoseTurn()}
-                    <div className="bct-info-input">
-                        <MoveInput
-                            handleEnter={this.handleEnter}
-                            resetMoveInput={this.state.resetMoveInput}
-                            resetMoveInputComplete={() => this.setState({ resetMoveInput: false })}
-                            moveErrorMessage={this.state.moveErrorMessage}
-                        />
-                        <span className="bct-info-input-or">-- or --</span>
-                        <MoveSpeechInput
-                            handleMoveSubmit={this.handleEnter}
-                            resetWaitingToConfirm={this.handleResetWaitingToConfirm}
-                            moveErrorMessage={this.state.moveErrorMessage}
-                            blackMoveMessage={this.state.blackMoveMessage}
-                            gameState={this.chessEngine.getCurrentStateAsFen()}
-                        />
+                <div className="bct-main">
+                    <div className="bct-main-chessboard">
+                        {this.state.boardShowing ? <Chessboard allowMoves={false} pieces={this.state.allPositionsAsNotations} /> : null}
                     </div>
-                    {this.state.waitingToConfirmMove ? <h1>please confirm by hitting enter again</h1> : null}
+                    {this.renderInputComponent()}
+                </div>
+                <div className="bct-info">
+                    <p>
+                        Voice Input: Commands like "Knight to h3" should suffice
+                        in most cases. "Queen Side Castle" and "King Side Castle" work. Pawn promotion works best
+                        when you say like "Pawn promotes to queen at a8."
+                    </p>
+                    <p>
+                        Text Input: You can enter your move as text here. There are
+                        <a href="https://github.com/jhlywa/chess.js/blob/master/README.md"> many supported conventions</a> but
+                        the simplest to grasp by far is simply by indicating the 'from' square and the 'to' square: "a2a3"
+                        (the piece at a2 goes to a3).
+                    </p>
+                    <p>
+                        About: Idea and Implementation by <a href="https://www.josephweidinger.com">Joseph Weidinger</a>
+                    </p>
+                    {this.renderWhoseTurn()}
                     {gameState !== GameStateType.Playable ? <EndingOverlay gameState={gameState} /> : null}
                     <AdvancedOptions
                         handleLoadGameFromFen={this.handleLoadGameFromFen}
@@ -165,9 +192,6 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
                         boardShowing={this.state.boardShowing}
                         handleToggleBoardShowing={() => this.setState({ boardShowing: !this.state.boardShowing })}
                     />
-                </div>
-                <div className="bct-chessboard">
-                    {this.state.boardShowing ? <Chessboard allowMoves={false} pieces={this.state.allPositionsAsNotations} /> : null}
                 </div>
             </div>
         )

@@ -1,10 +1,11 @@
 import * as React from 'react'
 
 export interface MoveInputProps {
-    handleEnter: (newMoveInput: string) => void
+    handleEnter: (newMoveInput: string, shouldConfirm?: boolean) => void
     resetMoveInput: boolean
     resetMoveInputComplete: () => void
     moveErrorMessage: string
+    handleToggleSpeechInput: () => void
 }
 
 export interface MoveInputState {
@@ -41,22 +42,21 @@ export default class MoveInput extends React.Component<MoveInputProps, MoveInput
     render() {
         return (
             <div className="bct-moveInput">
-                <div className="bct-moveInput-instructions">
+               <div className="bct-moveInput-titleAndSwitch">
                     <h2>Practice Using Keyboard</h2>
-                    <p><strong>TL;DR Type in your move (example: 'a2a3') and hit enter.</strong></p>
-                    <p>
-                        You can enter your move as text here. There are <a href="https://github.com/jhlywa/chess.js/blob/master/README.md">
-                        many supported conventions</a> but the simplest to grasp by far is simply by indicating the 'from' square and the
-                        'to' square: "a2a3" (the piece at a2 goes to a3).
-                    </p>
+                    <button onClick={this.props.handleToggleSpeechInput}>Switch to Speech Input</button>
+                </div>
+                <div className="bct-moveInput-instructions">
+                    <strong>Type in your move (example: 'a2a3') and hit enter or press button.</strong>
                 </div>
                 <input
                     ref={(input) => this.moveInput = input}
                     type="text"
                     value={this.state.newMoveInput}
                     onChange={(e) => this.setState({ newMoveInput: e.currentTarget.value })}
-                    onKeyPress={(e) => (e.key === 'Enter') && this.props.handleEnter(this.state.newMoveInput)}
+                    onKeyPress={(e) => (e.key === 'Enter') && this.props.handleEnter(this.state.newMoveInput, false)}
                 />
+                <button onClick={() => this.props.handleEnter(this.state.newMoveInput, false)}>Move</button>
                 <div className="bct-moveInput-errorMessage">
                     {this.props.moveErrorMessage}
                 </div>
