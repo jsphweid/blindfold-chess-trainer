@@ -11,6 +11,7 @@ import MoveSpeechInput from './move-speech-input/move-speech-input'
 import ChessPlayground from './chess-engine/chess-playground'
 import * as queryString from 'query-string'
 import { defaultFenChessState } from './common/constants'
+import AdvancedOptions from './advanced-options/advanced-options'
 
 export interface BlindfoldChessTrainerProps {
 }
@@ -134,8 +135,6 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
         return (
             <div className="bct">
                 <div className="bct-chessboard">
-                    <button onClick={this.playRandomGame}>Play Random Game</button>
-                    <button onClick={() => this.handleLoadGameFromFen(defaultFenChessState)}>Reset Game</button>
                     <Chessboard allowMoves={false} pieces={this.state.allPositionsAsNotations} />
                     <MoveSpeechInput
                         handleMoveSubmit={this.handleEnter}
@@ -155,11 +154,12 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
                         moveErrorMessage={this.state.moveErrorMessage}
                     />
                     {this.state.waitingToConfirmMove ? <h1>please confirm by hitting enter again</h1> : null}
-                    <FenSection
-                        handleLoadGameFromFen={this.handleLoadGameFromFen}
-                        currentBoardStateAsFen={this.chessEngine.getCurrentStateAsFen()}
-                    />
                     {gameState !== GameStateType.Playable ? <EndingOverlay gameState={gameState} /> : null}
+                    <AdvancedOptions
+                        handleLoadGameFromFen={this.handleLoadGameFromFen}
+                        playRandomGame={this.playRandomGame}
+                        fen={this.chessEngine.getCurrentStateAsFen()}
+                    />
                 </div>
             </div>
         )
