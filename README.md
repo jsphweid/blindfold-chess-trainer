@@ -13,10 +13,17 @@ Phase 3: ai
 (Phase 4: peer to peer)
 
 TODO:
- - when piece goes to other side, figure out how to revive older pieces
- - ending game should do something more special
- - should refocus on hit enter...
+ ~~- when piece goes to other side, figure out how to revive older pieces~~
+ - when in check, it should say check or something
  - get as far as possible with UI before someone else can add to it
   - 'play random game' and "load from fen" and "hide board" and 'show possible moves' should be under 'advanced'
   - simplify -> input box or hit spacebar
   
+Stuff for someone else to do?
+ - ending game should do something more special
+ - colors / styles / spacings
+ - mobile? => spacebar won't really work
+  - should refocus on hit enter...
+
+Stuff to mix maybe one day:
+ - reloading from a black turn should make black go immediately (else it never will)
