@@ -131,8 +131,6 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
 
         const gameState: GameStateType = this.chessEngine.getGameState()
 
-        console.log(this.chessEngine.getAllPossibleMoves())
-
         return (
             <div className="bct">
                 <div className="bct-chessboard">
