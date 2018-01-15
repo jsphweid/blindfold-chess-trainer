@@ -12,11 +12,9 @@ Phase 3: ai
 
 (Phase 4: peer to peer)
 
-TODO:
- - when piece goes to other side, figure out how to revive older pieces
+UI TODO:
+ - colors
+ - typography
+ - adaptive layout (need way to record audio
  - ending game should do something more special
- - should refocus on hit enter...
- - get as far as possible with UI before someone else can add to it
-  - 'play random game' and "load from fen" and "hide board" and 'show possible moves' should be under 'advanced'
-  - simplify -> input box or hit spacebar
-  
+

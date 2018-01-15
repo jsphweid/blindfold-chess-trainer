@@ -43,7 +43,7 @@ export default class MoveInput extends React.Component<MoveInputProps, MoveInput
             <div className="bct-moveInput">
                 <div className="bct-moveInput-instructions">
                     <h2>Practice Using Keyboard</h2>
-                    <p>TL;DR Type in your move (example: 'a2a3') and hit enter.</p>
+                    <p><strong>TL;DR Type in your move (example: 'a2a3') and hit enter.</strong></p>
                     <p>
                         You can enter your move as text here. There are <a href="https://github.com/jhlywa/chess.js/blob/master/README.md">
                         many supported conventions</a> but the simplest to grasp by far is simply by indicating the 'from' square and the

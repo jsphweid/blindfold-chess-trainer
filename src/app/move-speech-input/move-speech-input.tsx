@@ -111,6 +111,7 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
 
     initializeSpacebarHandler = (): void => {
         document.addEventListener('keydown', (keyEvent: KeyboardEvent) => {
+            if (keyEvent.code === 'Space') keyEvent.preventDefault()
             if (keyEvent.code === 'Space' && this.state.speechState !== Listening && !this.state.safetySpacebarIsPressed) {
                 this.props.resetWaitingToConfirm()
                 this.speechSynth.cancel()
@@ -119,6 +120,7 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
             }
         })
         document.addEventListener('keyup', (keyEvent: KeyboardEvent) => {
+            if (keyEvent.code === 'Space') keyEvent.preventDefault()
             if (keyEvent.code === 'Space') {
                 this.setState({ speechState: Thinking, safetySpacebarIsPressed: false })
                 this.speechRecognizer.stop()
@@ -195,10 +197,11 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
         return (
             <div className="bct-moveSpeechInput">
                 <h2>Practice Using Speech</h2>
+                <p><strong>Hold Spacebar and speak your move.</strong></p>
                 <p>
-                    Press Spacebar so the computer can listen. For now, it can only
-                    understand this basic yet explicit notation -- "a3 takes a4" or 
-                    "a3 moves to a4".
+                    Commands like "Knight to h3" should suffice
+                    in most cases. "Queen Side Castle" and "King Side Castle" work. Pawn promotion works best
+                    when you say like "Pawn promotes to queen at a8."
                 </p>
                 {this.renderSpeechRecognitionContent()}
             </div>

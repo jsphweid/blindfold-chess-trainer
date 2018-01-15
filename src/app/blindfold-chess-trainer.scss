@@ -1,18 +1,32 @@
 .bct {
-    display: flex;
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
 .bct-chessboard {
-    min-width: 400px;
-    margin: 16px;
-
-    button {
-        margin: 16px 0;
-    }
+    max-width: 600px;
+    margin: 0 auto;
 }
 
 .bct-info {
-    margin: 16px;
+    @extend .bct-cheapBoxDiv;
+
+    .bct-info-input-or {
+        display: block;
+        text-align: center;
+    }
+}
+
+@media screen and (min-width: 600px) {
+    .bct-info-input {
+        display: flex;
+
+        .bct-info-input-or {
+            min-width: 48px;
+            margin: 200px 16px;
+            top: 50%;
+        }
+    }
 }
 
 

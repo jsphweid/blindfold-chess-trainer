@@ -5,7 +5,6 @@ import ChessEngine from './chess-engine/chess-engine'
 import { getReactChessStateFromFen } from './common/helpers'
 import { GameStateType, MoveType } from './common/types'
 import EndingOverlay from './ending-overlay/ending-overlay'
-import FenSection from './fen-section/fen-section'
 import MoveInput from './move-input/move-input'
 import MoveSpeechInput from './move-speech-input/move-speech-input'
 import ChessPlayground from './chess-engine/chess-playground'
@@ -23,6 +22,7 @@ export interface BlindfoldChessTrainerState {
     computerThinkingAboutNextMove: boolean
     resetMoveInput: boolean
     blackMoveMessage: string
+    boardShowing: boolean
 }
 
 export default class BlindfoldChessTrainer extends React.Component<BlindfoldChessTrainerProps, BlindfoldChessTrainerState> {
@@ -38,7 +38,8 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
             moveErrorMessage: '',
             blackMoveMessage: '',
             computerThinkingAboutNextMove: false,
-            resetMoveInput: false
+            resetMoveInput: false,
+            boardShowing: true
         }
     }
 
@@ -75,7 +76,7 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
                 const playground = new ChessPlayground()
                 const blackMoveMessage = `black ${playground.getDescriptiveMove({ from, to } as MoveType, fenBeforeMove)}`
                 this.syncGameState()
-                this.setState({ blackMoveMessage, computerThinkingAboutNextMove: false })
+                this.setState({ blackMoveMessage, resetMoveInput: true, computerThinkingAboutNextMove: false })
             }, 1000)
         }, 500)
     }
@@ -123,7 +124,10 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
     renderWhoseTurn = (): JSX.Element => {
         return (
             <div>
-                <h1>{`It's ${this.chessEngine.isWhitesTurn() ? 'White\'s' : 'Black\'s' } turn!`}</h1>
+                <h1>
+                    {`It's ${this.chessEngine.isWhitesTurn() ? 'your' : 'Black\'s' } turn!`}
+                    {this.state.computerThinkingAboutNextMove ? ' Computer thinking...' : null}
+                </h1>
             </div>
         )
     }
@@ -134,32 +138,36 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
 
         return (
             <div className="bct">
-                <div className="bct-chessboard">
-                    <Chessboard allowMoves={false} pieces={this.state.allPositionsAsNotations} />
-                    <MoveSpeechInput
-                        handleMoveSubmit={this.handleEnter}
-                        resetWaitingToConfirm={this.handleResetWaitingToConfirm}
-                        moveErrorMessage={this.state.moveErrorMessage}
-                        blackMoveMessage={this.state.blackMoveMessage}
-                        gameState={this.chessEngine.getCurrentStateAsFen()}
-                    />
-                </div>
                 <div className="bct-info">
-                    {this.state.computerThinkingAboutNextMove ? <span style={{ fontSize: '20px' }}>Computer thinking...</span> : null}
                     {this.renderWhoseTurn()}
-                    <MoveInput
-                        handleEnter={this.handleEnter}
-                        resetMoveInput={this.state.resetMoveInput}
-                        resetMoveInputComplete={() => this.setState({ resetMoveInput: false })}
-                        moveErrorMessage={this.state.moveErrorMessage}
-                    />
+                    <div className="bct-info-input">
+                        <MoveInput
+                            handleEnter={this.handleEnter}
+                            resetMoveInput={this.state.resetMoveInput}
+                            resetMoveInputComplete={() => this.setState({ resetMoveInput: false })}
+                            moveErrorMessage={this.state.moveErrorMessage}
+                        />
+                        <span className="bct-info-input-or">-- or --</span>
+                        <MoveSpeechInput
+                            handleMoveSubmit={this.handleEnter}
+                            resetWaitingToConfirm={this.handleResetWaitingToConfirm}
+                            moveErrorMessage={this.state.moveErrorMessage}
+                            blackMoveMessage={this.state.blackMoveMessage}
+                            gameState={this.chessEngine.getCurrentStateAsFen()}
+                        />
+                    </div>
                     {this.state.waitingToConfirmMove ? <h1>please confirm by hitting enter again</h1> : null}
                     {gameState !== GameStateType.Playable ? <EndingOverlay gameState={gameState} /> : null}
                     <AdvancedOptions
                         handleLoadGameFromFen={this.handleLoadGameFromFen}
                         playRandomGame={this.playRandomGame}
                         fen={this.chessEngine.getCurrentStateAsFen()}
+                        boardShowing={this.state.boardShowing}
+                        handleToggleBoardShowing={() => this.setState({ boardShowing: !this.state.boardShowing })}
                     />
+                </div>
+                <div className="bct-chessboard">
+                    {this.state.boardShowing ? <Chessboard allowMoves={false} pieces={this.state.allPositionsAsNotations} /> : null}
                 </div>
             </div>
         )
