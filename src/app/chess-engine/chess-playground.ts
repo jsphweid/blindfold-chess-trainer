@@ -57,9 +57,20 @@ export default class ChessPlayground {
             : `${descriptiveFrom} moves to ${rawMove.to}?`
     }
 
+    getWhichPawnCanCastleThere(froms: PositionType[], to: PositionType, gameState: string): PositionType {
+        return froms
+            .map((from: PositionType) => {
+                this.chessEngine.load(gameState)
+                const success = this.chessEngine.move(`${from}${to}`, MOVE_OPTIONS)
+                return success ? from : null
+            })
+            .filter(Boolean)
+            [0] as PositionType || null
+    }
+
     moveIsValid(moveStr: string, gameState: string): boolean {
         this.chessEngine.load(gameState)
-        return this.chessEngine.move(moveStr)
+        return this.chessEngine.move(moveStr, MOVE_OPTIONS)
     }
 
 }

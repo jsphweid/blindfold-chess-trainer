@@ -8,7 +8,7 @@ import {
     kingSideCastleMoveStr, objWithPiecesAndCloseMatches, pieces,
     queenSideCastleMoveStr
 } from '../common/constants'
-import { getPieceLetter, isPiece, isPosition } from '../common/helpers'
+import { getPieceLetter, isPiece, isPosition, findPieceLoosely } from '../common/helpers'
 
 export default class SpeechProcessor {
 
@@ -22,6 +22,10 @@ export default class SpeechProcessor {
 
     static determineIfCastlingMove(guesses: string[]): boolean {
         return guesses.join(' ').split(' ').some((guess) => guess.toLowerCase() === 'castle')
+    }
+
+    static determineIfPawnPromoting(guesses: string[]): boolean {
+        return guesses.join(' ').split(' ').some((guess) => guess.includes('promo'))
     }
 
     static reformulateSpeechEvents(results: SpeechRecognitionResult[]): ReformulatedSpeechResultType {
@@ -40,10 +44,7 @@ export default class SpeechProcessor {
         const tokenizedResults: string[] = str.toLowerCase().split(' ')
 
         return tokenizedResults
-            .map((token: string) => {
-                if (isPosition(token)) return token
-                return pieces.filter((piece: PieceType) => objWithPiecesAndCloseMatches[piece].includes(token))[0]
-            })
+            .map((token: string) => (isPosition(token)) ? token : findPieceLoosely(token))
             .filter(Boolean)
             .filter((item, i, arr) => i === 0 || i === (arr.length - 1)) as ValidPieceOrPositionType[]
     }
@@ -103,8 +104,9 @@ export default class SpeechProcessor {
     }
 
     handleCastlingMove(rawResults: string[]): ProcessingResponseType {
-        const queen = rawResults.join(' ').split(' ').some((guess) => guess.toLowerCase() === 'queen')
-        const king = rawResults.join(' ').split(' ').some((guess) => guess.toLowerCase() === 'king')
+        const flattenedResults: string[] = rawResults.join(' ').split(' ')
+        const queen = flattenedResults.some((guess) => guess.toLowerCase() === 'queen')
+        const king = flattenedResults.some((guess) => guess.toLowerCase() === 'king')
 
         if ((queen && king) || (!queen && !king))
             return { responseType: ProcessingResponseStateType.Incomprehensible, refinedMove: null }
@@ -124,12 +126,47 @@ export default class SpeechProcessor {
         }
 
         return { responseType: ProcessingResponseStateType.Invalid, refinedMove: null }
+    }
+
+    handlePawnPromotion(rawResults: string[]): ProcessingResponseType {
+        const flattenedResults: string[] = rawResults.join(' ').split(' ')
+        const promoteToPiece: PieceType = flattenedResults
+            .map((token: string) => findPieceLoosely(token))
+            .filter((token: string) => !objWithPiecesAndCloseMatches['pawn'].includes(token))
+            .filter(Boolean)
+            .filter((item, i, arr) => i === arr.length - 1)[0]
+
+        if (!promoteToPiece)
+            return { responseType: ProcessingResponseStateType.Incomprehensible, refinedMove: null }
+        const pawnsOnSeven: PositionType[] = this.findAllSquaresPieceIsOn('pawn')
+            .filter((square: PositionType) => square[1] === '7')
+
+        const toPosition: PositionType = flattenedResults
+                .filter((token: string) => isPosition(token))[0] as PositionType
+                ||
+                `${pawnsOnSeven[0][0]}8` as PositionType
+
+        const fromPosition = this.playground.getWhichPawnCanCastleThere(pawnsOnSeven, toPosition, this.fen)
+
+        if (!toPosition || !fromPosition || !pawnsOnSeven)
+            return { responseType: ProcessingResponseStateType.Invalid, refinedMove: null }
+
+        return {
+            responseType: ProcessingResponseStateType.Successful,
+            refinedMove: {
+                descriptiveMove: `pawn promotes to ${promoteToPiece} at ${toPosition}?`,
+                rawMove: `${fromPosition}${toPosition}=${getPieceLetter(promoteToPiece)}`
+            }
+        }
 
     }
 
     computerGuess(rawResults: string[]): ProcessingResponseType {
-        const isCastlingMove: boolean = SpeechProcessor.determineIfCastlingMove(rawResults)
-        if (isCastlingMove) return this.handleCastlingMove(rawResults)
+        if (SpeechProcessor.determineIfCastlingMove(rawResults))
+            return this.handleCastlingMove(rawResults)
+        
+        if (SpeechProcessor.determineIfPawnPromoting(rawResults))
+            return this.handlePawnPromotion(rawResults)
 
         const bestGuess: SemiValidPieceOrPositionType[] = rawResults
             .map((result: string) => SpeechProcessor.getKeywords(result))
