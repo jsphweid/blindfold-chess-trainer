@@ -1,7 +1,8 @@
 import * as React from 'react'
 import { ProcessingResponseStateType, ProcessingResponseType, SpeechStateType } from '../common/types'
-import InteractiveComputerModal from './interactive-computer-modal'
 import SpeechProcessor from './speech-processor'
+import MicrophoneButton from './microphone-button'
+
 const { Listening, Speaking, Thinking, Inactive } = SpeechStateType
 
 export interface MoveSpeechInputProps {
@@ -10,6 +11,7 @@ export interface MoveSpeechInputProps {
     moveErrorMessage: string
     blackMoveMessage: string
     gameState: string
+    handleToggleSpeechInput: () => void
 }
 
 export interface MoveSpeechInputState {
@@ -26,6 +28,8 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
 
     speechRecognizer: SpeechRecognition
     speechSynth: SpeechSynthesis
+    utterances: SpeechSynthesisUtterance[] = [] // because of a bug with the api
+    speechSynthJustStarted: boolean = false // because of a bug with the api
 
     constructor(props: MoveSpeechInputProps) {
         super(props)
@@ -36,8 +40,8 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
             confirmMessage: '',
             speechEvents: [],
             confirmingMove: null,
-            speechState: Inactive,
-            safetySpacebarIsPressed: false
+            safetySpacebarIsPressed: false,
+            speechState: Inactive
         }
     }
 
@@ -56,10 +60,10 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
     }
 
     componentWillUpdate(nextProps: MoveSpeechInputProps, nextState: MoveSpeechInputState) {
-        if (this.state.info !== nextState.info) {
+        if (nextState.info && (this.state.info !== nextState.info)) {
             this.speak(nextState.info)
         }
-        if (this.props.blackMoveMessage !== nextProps.blackMoveMessage) {
+        if (nextProps.blackMoveMessage && (this.props.blackMoveMessage !== nextProps.blackMoveMessage)) {
             this.speak(nextProps.blackMoveMessage)
         }
     }
@@ -69,13 +73,23 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
     }
 
     speak = (text: string): void => {
-        if (!this.speechSynth) return null
+        if (!this.speechSynth || this.speechSynthJustStarted) return null
         const msg: SpeechSynthesisUtterance = new SpeechSynthesisUtterance()
         msg.text = text
         msg.volume = 1
         msg.rate = 1
         msg.pitch = 1
         msg.voice = speechSynthesis.getVoices().filter((voice) => voice.name === 'Google UK English Female')[0]
+        msg.onend = () => {
+            if (!this.speechSynthJustStarted) {
+                this.utterances = []
+                this.setState({ speechState: Inactive })
+            }
+        }
+        this.setState({ speechState: Speaking })
+        this.speechSynthJustStarted = true
+        setTimeout(() => this.speechSynthJustStarted = false, 500)
+        this.utterances.push(msg)
         this.speechSynth.speak(msg)
     }
 
@@ -85,45 +99,55 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
         this.speechRecognizer.lang = 'en-US'
         this.speechRecognizer.maxAlternatives = 10
         this.speechRecognizer.onresult = this.handleEventStream
-        this.speechRecognizer.onstart = (): void => this.setState({ speechEvents: [], info: '', speechState: Listening  })
-        this.speechRecognizer.onend = this.processSpeechEvents
+        this.speechRecognizer.onstart = (): void => this.setState({ speechEvents: [], info: '' })
+        this.speechRecognizer.onend = (): void => this.processSpeechEvents()
+
     }
 
     processSpeechEvents = (): void => {
         const topResults: string[] = SpeechProcessor.reformulateSpeechEvents(this.state.speechEvents).final
         const speechProcessor: SpeechProcessor = new SpeechProcessor(this.props.gameState)
         const guess: ProcessingResponseType = speechProcessor.computerGuess(topResults)
-        const speechState: SpeechStateType = Speaking
         switch (guess.responseType) {
             default:
             case ProcessingResponseStateType.Incomprehensible:
-                this.setState({ speechState, info: ProcessingResponseStateType.Incomprehensible })
+                this.setState({ info: ProcessingResponseStateType.Incomprehensible })
                 break
             case ProcessingResponseStateType.Invalid:
-                this.setState({ speechState, info: ProcessingResponseStateType.Invalid })
+                this.setState({ info: ProcessingResponseStateType.Invalid })
                 break
             case ProcessingResponseStateType.Successful:
                 this.props.handleMoveSubmit(guess.refinedMove.rawMove)
-                this.setState({ speechState, info: guess.refinedMove.descriptiveMove, confirmingMove: guess.refinedMove.rawMove })
+                this.setState({ info: guess.refinedMove.descriptiveMove, confirmingMove: guess.refinedMove.rawMove })
                 break
         }
     }
 
     initializeSpacebarHandler = (): void => {
         document.addEventListener('keydown', (keyEvent: KeyboardEvent) => {
+            if (keyEvent.code === 'Space') keyEvent.preventDefault()
             if (keyEvent.code === 'Space' && this.state.speechState !== Listening && !this.state.safetySpacebarIsPressed) {
-                this.props.resetWaitingToConfirm()
-                this.speechSynth.cancel()
-                this.speechRecognizer.start()
-                this.setState({ safetySpacebarIsPressed: true })
+                this.handleSpeechRecognizerStart()
             }
         })
         document.addEventListener('keyup', (keyEvent: KeyboardEvent) => {
+            if (keyEvent.code === 'Space') keyEvent.preventDefault()
             if (keyEvent.code === 'Space') {
-                this.setState({ speechState: Thinking, safetySpacebarIsPressed: false })
-                this.speechRecognizer.stop()
+                this.handleSpeechRecognizerStop()
             }
         })
+    }
+
+    handleSpeechRecognizerStart = (): void => {
+        this.props.resetWaitingToConfirm()
+        this.speechSynth.cancel()
+        this.speechRecognizer.start()
+        this.setState({ speechState: Listening, safetySpacebarIsPressed: true })
+    }
+
+    handleSpeechRecognizerStop = (): void => {
+        this.setState({ speechState: Thinking, safetySpacebarIsPressed: false })
+        this.speechRecognizer.stop()
     }
 
     handleEventStream = (event: SpeechRecognitionEvent): void => {
@@ -143,7 +167,6 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
     handleReset = (): void => {
         this.props.resetWaitingToConfirm()
         this.setState({
-            speechState: SpeechStateType.Inactive,
             info: '',
             confirmMessage: '',
             speechEvents: [],
@@ -151,7 +174,7 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
         })
     }
 
-    handleConfirmMove = (confirmingMove: string): void => {
+    handleConfirmMove = (confirmingMove: string = this.state.confirmingMove): void => {
         if (this.props.moveErrorMessage) {
             this.setState({ info: this.props.moveErrorMessage, confirmingMove: null })
         } else {
@@ -160,47 +183,33 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
         }
     }
 
-    renderInteractiveComputerModal = (): JSX.Element => {
-        const { speechState, confirmingMove, info } = this.state
-
-        return (
-            <InteractiveComputerModal
-                speechState={speechState}
-                confirmingMove={confirmingMove}
-                info={info}
-                handleEscape={this.handleReset}
-                handleConfirmMove={this.handleConfirmMove.bind(this, confirmingMove)}
-            />
-        )
-    }
-
-    renderSpeechRecognitionContent = (): JSX.Element => {
-        const { speechState, speechRecognitionSupportedAndOperational } = this.state
-        switch (speechRecognitionSupportedAndOperational) {
+    renderSpeechRecognitionStatus = (): JSX.Element => {
+        switch (this.state.speechRecognitionSupportedAndOperational) {
             default:
-            case null:
-                return <div>Attempting to load Web Speech...</div>
             case false:
                 return <div>Unfortunately Web Speech is not supported in this browser...</div>
+            case null:
+                return <div>Attempting to load Web Speech...</div>
             case true:
-                return (
-                    <div>
-                        {speechState !== SpeechStateType.Inactive ? this.renderInteractiveComputerModal() : null}
-                    </div>
-                )
+                return null
         }
     }
 
     render() {
         return (
             <div className="bct-moveSpeechInput">
-                <h2>Practice Using Speech</h2>
-                <p>
-                    Press Spacebar so the computer can listen. For now, it can only
-                    understand this basic yet explicit notation -- "a3 takes a4" or 
-                    "a3 moves to a4".
-                </p>
-                {this.renderSpeechRecognitionContent()}
+                <div className="bct-moveSpeechInput-titleAndSwitch">
+                    <h2>Practice Using Speech</h2>
+                    <button onClick={this.props.handleToggleSpeechInput}>Switch to Text Input</button>
+                </div>
+                <p><strong>Hold Spacebar (or click and hold on icon) and speak your move.</strong></p>
+                <MicrophoneButton
+                    handleClicked={this.handleSpeechRecognizerStart}
+                    handleUnclicked={this.handleSpeechRecognizerStop}
+                    speechState={this.state.speechState}
+                />
+                {this.state.confirmingMove ? <button onClick={() => this.handleConfirmMove()}>Confirm Move</button> : null}
+                {this.renderSpeechRecognitionStatus()}
             </div>
         )
     }

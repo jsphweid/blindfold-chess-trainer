@@ -1,20 +1,26 @@
 .bct {
-    display: flex;
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
-.bct-chessboard {
-    min-width: 400px;
-    margin: 16px;
+.bct-main {
+    width: 100%;
 
-    button {
-        margin: 16px 0;
+    .bct-main-chessboard {
+        width: 100%;
     }
+    
 }
 
 .bct-info {
-    margin: 16px;
+    @extend .bct-cheapBoxDiv;
 }
 
+@media screen and (min-width: 600px) {
+    .bct-main {
+        display: inline-flex;
+    }
+}
 
 // globals
 
@@ -25,7 +31,11 @@
 }
 
 .bct-cheapBoxDiv {
-    margin: 16px 0;
+    margin: 16px 16px;
     padding: 16px;
     border: 1px solid black;
 }
+
+$light-square: #F0D9B5;
+$dark-square: #B58863;
+
