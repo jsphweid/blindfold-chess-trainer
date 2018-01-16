@@ -12,9 +12,13 @@ Phase 3: ai
 
 (Phase 4: peer to peer)
 
-UI TODO:
- - colors
- - typography
- - adaptive layout (need way to record audio
- - ending game should do something more special
+TODO:
 
+Stuff for someone else to do?
+ - ending game should do something more special
+ - colors / styles / spacings
+ - mobile? => spacebar won't really work
+  - should refocus on hit enter...
+
+Stuff to mix maybe one day:
+ - reloading from a black turn should make black go immediately (else it never will)
