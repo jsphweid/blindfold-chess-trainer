@@ -19,10 +19,6 @@
 @media screen and (min-width: 600px) {
     .bct-main {
         display: inline-flex;
-
-        div:last-child {
-            width: 300px;
-        }
     }
 }
 
@@ -39,3 +35,7 @@
     padding: 16px;
     border: 1px solid black;
 }
+
+$light-square: #F0D9B5;
+$dark-square: #B58863;
+

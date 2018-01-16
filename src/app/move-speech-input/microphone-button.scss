@@ -1,0 +1,36 @@
+.bct-microphoneButton {
+    position: relative;
+    height: 160px;
+    width: 160px;
+    margin: 0 auto;
+
+    border-radius: 50%;
+    border: 1px solid black;
+
+    .bct-microphoneButton-stateText {
+        position: absolute;
+        width: 100%;
+        text-align: center;
+        top: 30px;
+    }
+
+    img {
+        position: absolute;
+        left: 50px;
+        top: 75px;
+        height: 60px;
+        width: 60px;
+        pointer-events: none;
+    }
+
+}
+
+.bct-microphoneButton:hover {
+    background: $light-square;
+    cursor: pointer;
+}
+
+.bct-microphoneButton.bct-microphoneButton--active {
+    background: $dark-square;
+    cursor: default;
+}

@@ -79,6 +79,7 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
                 const blackMoveMessage = `black ${playground.getDescriptiveMove({ from, to } as MoveType, fenBeforeMove)}`
                 this.syncGameState()
                 this.setState({ blackMoveMessage, resetMoveInput: true, computerThinkingAboutNextMove: false })
+                setTimeout(() => this.setState({ blackMoveMessage: null }), 2000)
             }, 1000)
         }, 500)
     }
@@ -145,17 +146,6 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
             )
     }
 
-    renderWhoseTurn = (): JSX.Element => {
-        return (
-            <div>
-                <h1>
-                    {`It's ${this.chessEngine.isWhitesTurn() ? 'your' : 'Black\'s' } turn!`}
-                    {this.state.computerThinkingAboutNextMove ? ' Computer thinking...' : null}
-                </h1>
-            </div>
-        )
-    }
-
     render() {
 
         const gameState: GameStateType = this.chessEngine.getGameState()
@@ -183,7 +173,6 @@ export default class BlindfoldChessTrainer extends React.Component<BlindfoldChes
                     <p>
                         About: Idea and Implementation by <a href="https://www.josephweidinger.com">Joseph Weidinger</a>
                     </p>
-                    {this.renderWhoseTurn()}
                     {gameState !== GameStateType.Playable ? <EndingOverlay gameState={gameState} /> : null}
                     <AdvancedOptions
                         handleLoadGameFromFen={this.handleLoadGameFromFen}
