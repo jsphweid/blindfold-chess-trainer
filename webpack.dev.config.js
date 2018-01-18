@@ -5,7 +5,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 module.exports = {
     devtool: "source-map",
     entry: {
-        client: ['react-hot-loader/patch', 'webpack/hot/only-dev-server', './src/develop'],
+        client: ['react-hot-loader/patch', 'webpack/hot/only-dev-server', './src/index'],
         vendor: ['react', 'react-dom']
     },
     output: {
