@@ -19,10 +19,7 @@ if (process.env.NODE_ENV === 'fakerun') {
 module.exports = {
     devtool: 'cheap-module-source-map',
     entry: {
-        client: [
-            './src/index.ts',
-            './src/styles.scss'
-        ]
+        client: ['./src/index.tsx']
     },
     output: {
         path: path.resolve(__dirname, 'dist/artifacts'),
