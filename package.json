@@ -10,6 +10,7 @@
     "build:package": "tsc && npm run build:sass",
     "build:sass": "node-sass src/styles.scss dist/package/styles.css",
     "clean": "rm -rf dist",
+    "deploy": "npm run build && ./deploy.sh",
     "lint": "tslint -p ./tsconfig.json",
     "test": "npm run lint && jest -t",
     "test:dev": "jest --watchAll -t",
