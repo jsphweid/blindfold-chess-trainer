@@ -64,8 +64,5 @@
     "webpack": "^3.8.1",
     "webpack-bundle-analyzer": "^2.9.0",
     "webpack-dev-server": "^2.9.2"
-  },
-  "peerDependencies": {
-    "react": "^16.0.0"
   }
 }
