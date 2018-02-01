@@ -12,9 +12,9 @@ Phase 3: ai
 
 (Phase 4: peer to peer)
 
-TODO:
+## TODO:
 
-Stuff for someone else to do (organized by top priority)
+### Stuff for someone else to do (organized by top priority)
 1. possibly improve the organization of content
    - should be intuitive so you can just start using...
    - ideally you won't need to scroll on desktop or mobile except to see the brief instructions / about section.
@@ -23,5 +23,9 @@ Stuff for someone else to do (organized by top priority)
 3. the main button should do some special cool artistic thing when it is talking (and probably when you are holding it down too???)
 4. ending game should do something more special... a modal pops up?
 
-small bugs to fix one day maybe:
+### small bugs to fix one day maybe:
  - reloading from a black turn should make black go immediately (else it never will)
+
+### more phases that will probably never happen:
+Phase 3: actual ai
+Phase 4: peer to peer
