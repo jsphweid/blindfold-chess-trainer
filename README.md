@@ -14,11 +14,13 @@ Phase 3: ai
 
 TODO:
 
-Stuff for someone else to do?
- - ending game should do something more special
- - colors / styles / spacings
- - mobile? => spacebar won't really work
-  - should refocus on hit enter...
+Stuff for someone else to do? (top priority at the top)
+ - a better plan for organizing content
+  - ideally you won't need to scroll on desktop or mobile except to see the brief instructions / about section.
+  - should be intuitive so you can just start using...
+ - colors / spacings / styles in general
+ - the main button should do some special cool artistic thing when it is talking (and probably when you are holding it down too???)
+ - ending game should do something more special... a modal pops up?
 
 Stuff to mix maybe one day:
  - reloading from a black turn should make black go immediately (else it never will)
