@@ -3,6 +3,7 @@ The point of this project is to use the technologies of our day (speech recognit
 
 ## Run
 `npm install`
+
 `npm run start`
 
 ## TODO:
