@@ -14,13 +14,14 @@ Phase 3: ai
 
 TODO:
 
-Stuff for someone else to do? (top priority at the top)
- - a better plan for organizing content
-  - ideally you won't need to scroll on desktop or mobile except to see the brief instructions / about section.
-  - should be intuitive so you can just start using...
- - colors / spacings / styles in general
- - the main button should do some special cool artistic thing when it is talking (and probably when you are holding it down too???)
- - ending game should do something more special... a modal pops up?
+Stuff for someone else to do (organized by top priority)
+ 1. possibly improve the organization of content
+   - should be intuitive so you can just start using...
+   - ideally you won't need to scroll on desktop or mobile except to see the brief instructions / about section.
+   - this was thought out a bit and may just need to be tweaked
+ 2. colors / spacings / styles in general
+ 3. the main button should do some special cool artistic thing when it is talking (and probably when you are holding it down too???)
+ 4. ending game should do something more special... a modal pops up?
 
-Stuff to mix maybe one day:
+small bugs to fix one day maybe:
  - reloading from a black turn should make black go immediately (else it never will)
