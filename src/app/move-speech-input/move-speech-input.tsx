@@ -74,6 +74,7 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
 
     speak = (text: string): void => {
         if (!this.speechSynth || this.speechSynthJustStarted) return null
+        this.setState({ speechState: Speaking })        
         const msg: SpeechSynthesisUtterance = new SpeechSynthesisUtterance()
         msg.text = text
         msg.volume = 1
@@ -86,7 +87,6 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
                 this.setState({ speechState: Inactive })
             }
         }
-        this.setState({ speechState: Speaking })
         this.speechSynthJustStarted = true
         setTimeout(() => this.speechSynthJustStarted = false, 500)
         this.utterances.push(msg)
@@ -99,9 +99,11 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
         this.speechRecognizer.lang = 'en-US'
         this.speechRecognizer.maxAlternatives = 10
         this.speechRecognizer.onresult = this.handleEventStream
-        this.speechRecognizer.onstart = (): void => this.setState({ speechEvents: [], info: '' })
-        this.speechRecognizer.onend = (): void => this.processSpeechEvents()
-
+        this.speechRecognizer.onstart = (): void => this.setState({ speechState: Listening, speechEvents: [], info: '' })
+        this.speechRecognizer.onend = (): void => {
+            this.setState({ speechState: Thinking })
+            this.processSpeechEvents()
+        }
     }
 
     processSpeechEvents = (): void => {
@@ -127,12 +129,14 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
         document.addEventListener('keydown', (keyEvent: KeyboardEvent) => {
             if (keyEvent.code === 'Space') keyEvent.preventDefault()
             if (keyEvent.code === 'Space' && this.state.speechState !== Listening && !this.state.safetySpacebarIsPressed) {
+                this.setState({ safetySpacebarIsPressed: true })                
                 this.handleSpeechRecognizerStart()
             }
         })
         document.addEventListener('keyup', (keyEvent: KeyboardEvent) => {
             if (keyEvent.code === 'Space') keyEvent.preventDefault()
             if (keyEvent.code === 'Space') {
+                this.setState({ safetySpacebarIsPressed: false })                
                 this.handleSpeechRecognizerStop()
             }
         })
@@ -142,12 +146,15 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
         this.props.resetWaitingToConfirm()
         this.speechSynth.cancel()
         this.speechRecognizer.start()
-        this.setState({ speechState: Listening, safetySpacebarIsPressed: true })
     }
 
     handleSpeechRecognizerStop = (): void => {
-        this.setState({ speechState: Thinking, safetySpacebarIsPressed: false })
         this.speechRecognizer.stop()
+        setTimeout(() => { // if something goes wrong, just reset
+            if (this.state.speechState === Thinking) {
+                this.handleReset()
+            }
+        }, 500)
     }
 
     handleEventStream = (event: SpeechRecognitionEvent): void => {
@@ -166,11 +173,14 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
 
     handleReset = (): void => {
         this.props.resetWaitingToConfirm()
+        this.speechSynth.cancel()
+        this.speechRecognizer.stop()
         this.setState({
             info: '',
             confirmMessage: '',
             speechEvents: [],
-            confirmingMove: null
+            confirmingMove: null,
+            speechState: Inactive
         })
     }
 

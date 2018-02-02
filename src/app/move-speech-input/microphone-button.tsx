@@ -13,6 +13,7 @@ export interface MicrophoneButtonProps {
 
 export interface MicrophoneButtonState {
     mouseIsDepressed: boolean
+    blockNewClick: boolean
 }
 
 export default class MicrophoneButton extends React.Component<MicrophoneButtonProps, MicrophoneButtonState> {
@@ -20,18 +21,20 @@ export default class MicrophoneButton extends React.Component<MicrophoneButtonPr
     constructor(props: MicrophoneButtonProps) {
         super(props)
         this.state = {
-            mouseIsDepressed: false
+            mouseIsDepressed: false,
+            blockNewClick: false
         }
     }
 
     componentWillUpdate(nextProps: MicrophoneButtonProps, nextState: MicrophoneButtonState) {
         if (nextState.mouseIsDepressed !== this.state.mouseIsDepressed) {
-            this.handleClick(nextState.mouseIsDepressed, nextProps.speechState)
+            this.handleClickUnclick(nextState.mouseIsDepressed, nextProps.speechState)
         }
     }
 
-    handleClick = (mouseIsDepressed: boolean, speechState: SpeechStateType): void => {
+    handleClickUnclick = (mouseIsDepressed: boolean, speechState: SpeechStateType): void => {
         if (speechState === Thinking) return
+        console.log('click event mouseIsDepressed', mouseIsDepressed)
         if (mouseIsDepressed) {
             this.props.handleClicked()
         } else {
@@ -40,12 +43,13 @@ export default class MicrophoneButton extends React.Component<MicrophoneButtonPr
     }
 
     handleMouseUp = (): void => {
+        setTimeout(() => this.setState({ blockNewClick: false }), 200)
         if (this.state.mouseIsDepressed)
-            this.setState({ mouseIsDepressed: false })
+            this.setState({ blockNewClick: true, mouseIsDepressed: false })
     }
 
     handleMouseDown = (): void => {
-        if (!this.state.mouseIsDepressed)
+        if (!this.state.mouseIsDepressed && !this.state.blockNewClick)
             this.setState({ mouseIsDepressed: true })
     }
 
