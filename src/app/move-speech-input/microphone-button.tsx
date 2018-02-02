@@ -34,7 +34,6 @@ export default class MicrophoneButton extends React.Component<MicrophoneButtonPr
 
     handleClickUnclick = (mouseIsDepressed: boolean, speechState: SpeechStateType): void => {
         if (speechState === Thinking) return
-        console.log('click event mouseIsDepressed', mouseIsDepressed)
         if (mouseIsDepressed) {
             this.props.handleClicked()
         } else {
