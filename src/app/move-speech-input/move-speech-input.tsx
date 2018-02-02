@@ -203,12 +203,12 @@ export default class MoveSpeechInput extends React.Component<MoveSpeechInputProp
                     handleUnclicked={this.handleSpeechRecognizerStop}
                     speechState={this.state.speechState}
                 />
+                {this.state.confirmingMove ? <button onClick={() => this.handleConfirmMove()}>Confirm Move</button> : null}
                 <div className="bct-moveSpeechInput-titleAndSwitch">
                     <h2>Practice Using Speech</h2>
                     <button onClick={this.props.handleToggleSpeechInput}>Switch to Text Input</button>
                 </div>
                 <p><strong>Hold Spacebar (or click and hold on icon) and speak your move.</strong></p>
-                {this.state.confirmingMove ? <button onClick={() => this.handleConfirmMove()}>Confirm Move</button> : null}
                 {this.renderSpeechRecognitionStatus()}
             </div>
         )
