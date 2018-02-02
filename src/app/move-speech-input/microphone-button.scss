@@ -7,6 +7,11 @@
     border-radius: 50%;
     border: 1px solid black;
 
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
     .bct-microphoneButton-stateText {
         position: absolute;
         width: 100%;
