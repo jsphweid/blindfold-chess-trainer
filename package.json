@@ -4,17 +4,14 @@
   "description": "Efficient way to learn and practice blindfold chess",
   "main": "dist/package/index.js",
   "scripts": {
-    "start": "webpack-dev-server --config webpack.dev.config.js",
-    "build": "npm run clean && npm run build:artifacts && npm run build:package",
-    "build:artifacts": "webpack --config webpack.prod.config.js",
-    "build:package": "tsc && npm run build:sass",
-    "build:sass": "node-sass src/styles.scss dist/package/styles.css",
+    "analyze:size": "NODE_ENV=fakerun webpack --config webpack.library.config.js",
+    "build": "npm run clean && webpack --config webpack.prod.config.js",
     "clean": "rm -rf dist",
     "deploy": "npm run build && ./deploy.sh",
     "lint": "tslint -p ./tsconfig.json",
+    "start": "webpack-dev-server --config webpack.dev.config.js",
     "test": "npm run lint && jest -t",
-    "test:dev": "jest --watchAll -t",
-    "analyze:size": "NODE_ENV=fakerun webpack --config webpack.library.config.js"
+    "test:dev": "jest --watchAll -t"
   },
   "author": "",
   "license": "ISC",

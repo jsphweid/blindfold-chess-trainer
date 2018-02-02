@@ -22,7 +22,7 @@ module.exports = {
         client: ['./src/index.tsx']
     },
     output: {
-        path: path.resolve(__dirname, 'dist/artifacts'),
+        path: path.resolve(__dirname, 'dist'),
         filename: 'bundle-[chunkhash].js'
     },
     resolve: {
